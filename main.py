@@ -14,17 +14,16 @@ starttxt = sans.render('Dungeon Run', False, (0, 0, 0))
 sans = pygame.font.SysFont('Comic Sans MS', 20)
 start = sans.render('Press ENTER to start', False, (0, 0, 0))
 
-musicsound = pygame.mixer.Sound("sound/music.wav")
+#musicsound = pygame.mixer.Sound("sound/music.wav")
 
 def loadjson(f):
     with open(f, 'rb') as file:
         o = json.load(file)
     return o
 
-musicsound.play(-1)
+#musicsound.play(-1)
 
 while True:
-    dt = clock.tick(fps) / 1000
     keys = pygame.key.get_pressed()
 
     screen.fill((34, 34, 34))
