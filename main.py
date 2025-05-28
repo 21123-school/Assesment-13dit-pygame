@@ -9,49 +9,65 @@ screen = pygame.display.set_mode((18*45, 14*45))
 clock = pygame.time.Clock()
 fps = 120
 
-sans = pygame.font.SysFont('Comic Sans MS', 20)
-start = sans.render('test', False, (0, 0, 0))
-
-playerrect = pygame.rect(10,10,10,10)
+playerrect = pygame.Rect((0,0),(10,10))
 
 #musicsound = pygame.mixer.Sound("sound/music.wav")
 #musicsound.play(-1)
+
+class tilemap:
+    def __init__(self):
+        self.currentlevel= [
+            [0,0,0,0,0,0],
+            [0,1,2,0,0,0],
+            [0,0,1,0,0,0],
+            [0,0,0,1,0,0],
+            [0,0,0,0,0,0],
+            ]
+
+    def drawlevel(self):
+        tempcolor = [pygame.Color(50,150,0), pygame.Color(50,0,0), pygame.Color(0,150,150)]
+        for i in range(len(self.currentlevel)):
+            for j in range(len(self.currentlevel[i])):
+                tilerect = ( (j*45, i*45), (45,45) )
+                pygame.draw.rect(screen, tempcolor[self.currentlevel[i][j]], tilerect) 
+
+    def map_to_global(self, vector):
+        x = int(str((vector.x + 5) / 45)[0])
+        y = int(str((vector.y + 5) / 45)[0])
+        return pygame.math.Vector2(x, y)
+
+def pygametext(txt):
+    sans = pygame.font.SysFont('Comic Sans MS', 20)
+    return sans.render(txt, False, (0, 0, 0))
 
 def loadjson(f):
     with open(f, 'rb') as file:
         o = json.load(file)
     return o
 
-def drawlevel():
-    currentlevel = [
-        [0,0,0,0],
-        [0,1,2,0],
-        [0,0,0,0],
-        ]
-
-    tempcolor = [pygame.Color(50,150,0), pygame.Color(50,50,0), pygame.Color(0,150,0)]
-
-    for i in range(len(currentlevel)):
-        for j in range(len(currentlevel[i])):
-            tilerect = ( (j*45, i*45), (45,45) )
-            pygame.draw.rect(screen, tempcolor[currentlevel[i][j]], tilerect) 
-
 def playermove():
     pygame.display.set_caption('FPS: ' + str(int(clock.get_fps())))
     global keys
+    
+    test = {True: 0, False: 1}
 
-    if keys[pygame.K_w]:
-        playerrect.y += -10
+    movevector = pygame.math.Vector2( ( test[keys[pygame.K_a]] + 0 - test[keys[pygame.K_d]] ) , ( test[keys[pygame.K_w]] + 0 - test[keys[pygame.K_s]] ) )
+
+    playerrect.x += movevector.x
+    playerrect.y += movevector.y
+
+tilemap = tilemap()
 
 while True:
     keys = pygame.key.get_pressed()
 
     screen.fill((34, 34, 34))
 
-    drawlevel()
+    tilemap.drawlevel()
+
     playermove()
 
-    screen.blit(start, (1,1,1,1))
+    screen.blit( pygametext( 'X: ' + str(tilemap.map_to_global(playerrect).x) + ' Y: ' + str(tilemap.map_to_global(playerrect).y) ) , (1,1,1,1))
 
     pygame.draw.rect(screen, pygame.Color(150,0,150), playerrect) 
 
