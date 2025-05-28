@@ -29,19 +29,12 @@ def drawlevel():
         [0,0,0,0],
         ]
 
+    tempcolor = [pygame.Color(50,150,0), pygame.Color(50,50,0), pygame.Color(0,150,0)]
+
     for i in range(len(currentlevel)):
-
         for j in range(len(currentlevel[i])):
-
             tilerect = ( (j*45, i*45), (45,45) )
-
-            if currentlevel[i][j] == 0:
-                pygame.draw.rect(screen, pygame.Color(50,150,0), tilerect) 
-
-            elif currentlevel[i][j] == 1:
-                pygame.draw.rect(screen, pygame.Color(150,150,150), tilerect) 
-            elif currentlevel[i][j] == 2:
-                pygame.draw.rect(screen, pygame.Color(150,0,150), tilerect) 
+            pygame.draw.rect(screen, tempcolor[currentlevel[i][j]], tilerect) 
 
 def playermove():
     pygame.display.set_caption('FPS: ' + str(int(clock.get_fps())))
