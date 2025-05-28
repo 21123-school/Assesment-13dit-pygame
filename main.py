@@ -9,11 +9,22 @@ screen = pygame.display.set_mode((18*45, 14*45))
 clock = pygame.time.Clock()
 fps = 120
 
-playerrect = pygame.Rect((0,0),(10,10))
-
 #musicsound = pygame.mixer.Sound("sound/music.wav")
 #musicsound.play(-1)
 
+class player:
+    def __init__(self):
+        self.playerrect = pygame.Rect((0,0),(10,10))
+    
+    def playermove(self):
+        self.keys = pygame.key.get_pressed()
+        
+        self.BoolToInt = {True: 0, False: 1}
+        self.movevector = pygame.math.Vector2( ( self.BoolToInt[self.keys[pygame.K_a]] + 0 - self.BoolToInt[self.keys[pygame.K_d]] ), ( self.BoolToInt[self.keys[pygame.K_w]] + 0 - self.BoolToInt[self.keys[pygame.K_s]] ) )
+
+        self.playerrect.x += self.movevector.x
+        self.playerrect.y += self.movevector.y
+    
 class tilemap:
     def __init__(self):
         self.currentlevel= [
@@ -31,9 +42,9 @@ class tilemap:
                 tilerect = ( (j*45, i*45), (45,45) )
                 pygame.draw.rect(screen, tempcolor[self.currentlevel[i][j]], tilerect) 
 
-    def map_to_global(self, vector):
-        x = int(str((vector.x + 5) / 45)[0])
-        y = int(str((vector.y + 5) / 45)[0])
+    def global_to_map(self, vector):
+        x = int((vector.x + 5) // 45)
+        y = int((vector.y + 5) // 45)
         return pygame.math.Vector2(x, y)
 
 def pygametext(txt):
@@ -45,37 +56,26 @@ def loadjson(f):
         o = json.load(file)
     return o
 
-def playermove():
-    pygame.display.set_caption('FPS: ' + str(int(clock.get_fps())))
-    global keys
-    
-    test = {True: 0, False: 1}
-
-    movevector = pygame.math.Vector2( ( test[keys[pygame.K_a]] + 0 - test[keys[pygame.K_d]] ) , ( test[keys[pygame.K_w]] + 0 - test[keys[pygame.K_s]] ) )
-
-    playerrect.x += movevector.x
-    playerrect.y += movevector.y
-
 tilemap = tilemap()
+player = player()
+
+processes = [tilemap.drawlevel, player.playermove]
 
 while True:
-    keys = pygame.key.get_pressed()
-
     screen.fill((34, 34, 34))
 
-    tilemap.drawlevel()
+    for process in processes:
+        process()
 
-    playermove()
+    screen.blit( pygametext( 'X: ' + str(tilemap.global_to_map(player.playerrect).x) + ' Y: ' + str(tilemap.global_to_map(player.playerrect).y) ) , (1,1,1,1))
 
-    screen.blit( pygametext( 'X: ' + str(tilemap.map_to_global(playerrect).x) + ' Y: ' + str(tilemap.map_to_global(playerrect).y) ) , (1,1,1,1))
-
-    pygame.draw.rect(screen, pygame.Color(150,0,150), playerrect) 
+    pygame.draw.rect(screen, pygame.Color(150,0,150), player.playerrect) 
 
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
-    
 
+    pygame.display.set_caption('FPS: ' + str(int(clock.get_fps())))
     pygame.display.update()
     clock.tick(fps)
