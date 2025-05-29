@@ -24,6 +24,11 @@ class player:
 
         self.playerrect.x += self.movevector.x
         self.playerrect.y += self.movevector.y
+
+        self.draw()
+    
+    def draw(self):
+        pygame.draw.rect(screen, pygame.Color(150,0,150), player.playerrect) 
     
 class tilemap:
     def __init__(self):
@@ -68,8 +73,6 @@ while True:
         process()
 
     screen.blit( pygametext( 'X: ' + str(tilemap.global_to_map(player.playerrect).x) + ' Y: ' + str(tilemap.global_to_map(player.playerrect).y) ) , (1,1,1,1))
-
-    pygame.draw.rect(screen, pygame.Color(150,0,150), player.playerrect) 
 
     for event in pygame.event.get():
         if event.type == QUIT:
