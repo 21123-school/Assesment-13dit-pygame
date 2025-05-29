@@ -13,26 +13,29 @@ fps = 120
 #musicsound.play(-1)
 
 class player:
-    def __init__(self):
+    def __init__(self, tilemap):
+        self.tilemap = tilemap
         self.playerrect = pygame.Rect((0,0),(10,10))
-    
+
     def playermove(self):
         self.keys = pygame.key.get_pressed()
-        
+
         self.BoolToInt = {True: 0, False: 1}
         self.movevector = pygame.math.Vector2( ( self.BoolToInt[self.keys[pygame.K_a]] + 0 - self.BoolToInt[self.keys[pygame.K_d]] ), ( self.BoolToInt[self.keys[pygame.K_w]] + 0 - self.BoolToInt[self.keys[pygame.K_s]] ) )
 
-        self.playerrect.x += self.movevector.x
-        self.playerrect.y += self.movevector.y
+        self.temp = self.tilemap.global_to_map(pygame.math.Vector2(self.playerrect.x + self.movevector.x, self.playerrect.y + self.movevector.y))
+        if self.tilemap.currentlevel[int(self.temp.y)][int(self.temp.x)] == 0:
+            self.playerrect.x += self.movevector.x
+            self.playerrect.y += self.movevector.y
 
         self.draw()
-    
+
     def draw(self):
         pygame.draw.rect(screen, pygame.Color(150,0,150), player.playerrect) 
-    
+
 class tilemap:
     def __init__(self):
-        self.currentlevel= [
+        self.currentlevel = [
             [0,0,0,0,0,0],
             [0,1,2,0,0,0],
             [0,0,1,0,0,0],
@@ -62,7 +65,7 @@ def loadjson(f):
     return o
 
 tilemap = tilemap()
-player = player()
+player = player(tilemap)
 
 processes = [tilemap.drawlevel, player.playermove]
 
