@@ -25,13 +25,15 @@ ttk.Label(frm, text="---------game launcher---------").grid(
 )
 
 # Dropdown label + combobox
-ttk.Label(frm, text="Select script:").grid(
+ttk.Label(frm, text="Select GamePack:").grid(
     column=0, row=1, sticky=W, padx=5, pady=5
 )
 
 selected_file = StringVar()
 file_dropdown = ttk.Combobox(frm, textvariable=selected_file, values=files, state="readonly", width=30)
 file_dropdown.grid(column=1, row=1, padx=5, pady=5)
+if files:
+    selected_file.set(files[0])
 
 # Start button with vertical spacing
 ttk.Button(frm, text="Start", command=lambda: subprocess.Popen([sys.executable, "main.py", selected_file.get()])).grid(
