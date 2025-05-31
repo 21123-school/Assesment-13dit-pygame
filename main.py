@@ -1,6 +1,7 @@
 import pygame
 import sys
 import json
+import mapload
 from pygame.locals import QUIT
 
 # pygame set up
@@ -34,14 +35,8 @@ class player:
         pygame.draw.rect(screen, pygame.Color(150,0,150), player.playerrect) 
 
 class tilemap:
-    def __init__(self):
-        self.currentlevel = [
-            [0,0,0,0,0,0],
-            [0,1,2,0,0,0],
-            [0,0,1,0,0,0],
-            [0,0,0,1,0,0],
-            [0,0,0,0,0,0],
-            ]
+    def __init__(self,map):
+        self.currentlevel = map
 
     def drawlevel(self):
         tempcolor = [pygame.Color(50,150,0), pygame.Color(50,0,0), pygame.Color(0,150,150)]
@@ -64,7 +59,7 @@ def loadjson(f):
         o = json.load(file)
     return o
 
-tilemap = tilemap()
+tilemap = tilemap(mapload.buildmap(mapload.loadrawdata(f'local.map')))
 player = player(tilemap)
 
 processes = [tilemap.drawlevel, player.playermove]
