@@ -59,7 +59,7 @@ def loadjson(f):
         o = json.load(file)
     return o
 
-tilemap = tilemap(mapload.buildmap(mapload.loadrawdata(f'local.map')))
+tilemap = tilemap(mapload.buildmap(mapload.loadpakitem('data.pak','local.map')))
 player = player(tilemap)
 
 processes = [tilemap.drawlevel, player.playermove]
