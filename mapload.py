@@ -24,5 +24,5 @@ def loadpakitem(pak,filename):
 	with ZipFile(pak, 'r') as pakref:
 		with pakref.open(filename, 'r') as file:
 			read = file.read()
-			content = read.decode('utf-8')
+			content = read
 		return content
