@@ -16,6 +16,8 @@ deltatime = 1
 
 class player:
 	def __init__(self, tilemap):
+		self.isonfloor = False
+		self.vely = 0
 		self.tilemap = tilemap
 		self.lasttime = 0
 		self.playerrect = pygame.Rect(( len(self.tilemap.currentlevel[0]) * 16 - 5, len(self.tilemap.currentlevel) * 16 - 5),(10,10))
@@ -26,10 +28,29 @@ class player:
 		self.BoolToInt = {True: 0, False: 1}
 		self.movevector = pygame.math.Vector2( ( self.BoolToInt[self.keys[pygame.K_a]] + 0 - self.BoolToInt[self.keys[pygame.K_d]] ), ( self.BoolToInt[self.keys[pygame.K_w]] + 0 - self.BoolToInt[self.keys[pygame.K_s]] ) )
 		
-		self.temp = self.tilemap.global_to_map(pygame.math.Vector2(self.playerrect.x + self.movevector.x, self.playerrect.y + self.movevector.y))
-		if self.tilemap.currentlevel[int(self.temp.y)][int(self.temp.x)] != 2:
+		self.tempx = self.tilemap.global_to_map(pygame.math.Vector2(self.playerrect.x + self.movevector.x, self.playerrect.y))
+		#self.tempy = self.tilemap.global_to_map(pygame.math.Vector2(self.playerrect.x, self.playerrect.y + self.movevector.y))
+
+		if not self.vely >= 1.5:
+			self.vely += 0.01
+		if self.keys[pygame.K_w] and self.isonfloor:
+			self.vely = -2
+
+		self.isonfloor = False
+
+		self.tempy = self.tilemap.global_to_map(pygame.math.Vector2(self.playerrect.x, self.playerrect.y + self.vely))
+
+		if self.tilemap.currentlevel[int(self.tempy.y)][int(self.tempy.x)] != 2:
+			self.playerrect.y += self.vely * deltatime
+		else:
+			while self.tilemap.currentlevel[int(self.tempy.y)][int(self.tempy.x)] != 2:
+				self.playerrect.y += -0.5 * deltatime
+				self.tempy = self.tilemap.global_to_map(pygame.math.Vector2(self.playerrect.x, self.playerrect.y + self.vely))
+			self.isonfloor = True
+
+		if self.tilemap.currentlevel[int(self.tempx.y)][int(self.tempx.x)] != 2:
 			self.playerrect.x += self.movevector.x * deltatime
-			self.playerrect.y += self.movevector.y * deltatime
+
 		self.draw()
 
 	def draw(self):
@@ -60,7 +81,13 @@ def loadjson(f):
         o = json.load(file)
     return o
 
-tilemap = tilemap(mapload.buildmap(mapload.loadpakitem('data.pak','data/maps/local.map').decode('utf-8')))
+try:
+	tilemap = tilemap(mapload.buildmap(mapload.loadpakitem(sys.argv[1],'data/maps/local.map').decode('utf-8')))
+except:
+	print('failed..')
+	input('')
+#tilemap = tilemap(mapload.buildmap(mapload.loadpakitem('data.pak','data/maps/local.map').decode('utf-8')))
+
 player = player(tilemap)
 
 processes = [tilemap.drawlevel, player.playermove]
