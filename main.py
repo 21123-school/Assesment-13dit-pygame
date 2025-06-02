@@ -16,11 +16,17 @@ deltatime = 1
 
 class player:
 	def __init__(self, tilemap):
+		self.playeranimations = [pygame.transform.scale(pygame.image.load(mapload.loadpakitem(sys.argv[1],f'{arg}/textures/playerstand.png')), (32,32)), pygame.transform.scale(pygame.image.load(mapload.loadpakitem(sys.argv[1],f'{arg}/textures/playerwalk.png')), (32,32))]
 		self.isonfloor = False
 		self.vely = 0
+		self.moving = True
+		self.animation = True
+		self.animationdelay = fps / 8
+		self.currentanimationdelay = 0
 		self.tilemap = tilemap
 		self.lasttime = 0
-		self.playerrect = pygame.Rect(( len(self.tilemap.currentlevel[0]) * 16 - 5, len(self.tilemap.currentlevel) * 16 - 5),(10,10))
+		self.dir = 1
+		self.playerrect = pygame.Rect(( len(self.tilemap.currentlevel[0]) * 16 - 16, len(self.tilemap.currentlevel) * 16 - 16),(10,10))
 	
 	def playermove(self):
 		self.keys = pygame.key.get_pressed()
@@ -38,7 +44,7 @@ class player:
 
 		self.isonfloor = False
 
-		self.tempy = self.tilemap.global_to_map(pygame.math.Vector2(self.playerrect.x, self.playerrect.y + (0.6 + self.vely) + 5))
+		self.tempy = self.tilemap.global_to_map(pygame.math.Vector2(self.playerrect.x, self.playerrect.y + (0.6 + self.vely) + 15))
 
 		if self.tilemap.currentlevel[int(self.tempy.y)][int(self.tempy.x)] != 2:
 			self.playerrect.y += self.vely
@@ -56,7 +62,22 @@ class player:
 		self.draw()
 
 	def draw(self):
-		pygame.draw.rect(screen, pygame.Color(150,0,150), player.playerrect) 
+		#try:
+		if self.movevector.x != 0 or self.movevector.y != 0:
+			if self.movevector.x < 0:
+				screen.blit(pygame.transform.flip(self.playeranimations[{True:1,False:0}[self.animation]], True, False),self.playerrect)
+			else:
+				screen.blit(self.playeranimations[{True:1,False:0}[self.animation]],self.playerrect)
+
+			if self.currentanimationdelay >= self.animationdelay:
+				self.animation = not self.animation
+				self.currentanimationdelay = 0
+			else:
+				self.currentanimationdelay += 1
+		else:
+			screen.blit(self.playeranimations[0],self.playerrect)
+		#except:
+		#	pass#pygame.draw.rect(screen, pygame.Color(150,0,150), self.playerrect) 
 
 class tilemap:
 	def __init__(self,map):
@@ -76,8 +97,8 @@ class tilemap:
 						pygame.draw.rect(screen, pygame.Color(255,255,255), tilerect) 
 
 	def global_to_map(self, vector):
-		x = int((vector.x + 5) // 32)
-		y = int((vector.y + 5) // 32)
+		x = int((vector.x + 16) // 32)
+		y = int((vector.y + 16) // 32)
 		return pygame.math.Vector2(x, y)
 
 def pygametext(txt):
@@ -90,12 +111,10 @@ def loadjson(f):
 	return o
 
 arg = str(sys.argv[1]).split('.')[0]
+newmap, nextlevel = mapload.buildmap(mapload.loadpaktext(sys.argv[1], f"{arg}/maps/local.map"))
+tilemap = tilemap(newmap)
+print(nextlevel)
 
-try:
-	tilemap = tilemap(mapload.buildmap(mapload.loadpaktext(sys.argv[1], f"{arg}/maps/local.map")))
-except:
-	print('failed..')
-	input('')
 #tilemap = tilemap(mapload.buildmap(mapload.loadpakitem('data.pak',f'{arg}/maps/local.map').decode('utf-8')))
 
 player = player(tilemap)
@@ -118,4 +137,4 @@ while True:
 	pygame.display.set_caption('FPS: ' + str(int(clock.get_fps())))
 
 	pygame.display.update()
-	clock.tick(120)
+	clock.tick(fps)

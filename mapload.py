@@ -11,15 +11,23 @@ def loadrawdata(filepath):
 """
 
 def buildmap(map):
-    temp = []
-    newmap = []
-    for i in range(len(map)):
-        if map[i] != 'm':
-            temp = temp + [scramble[map[i]]]
-        else:
-            newmap.append(temp)
-            temp = []
-    return newmap
+	temp = []
+	newmap = []
+	nextlevel = ''
+	mapdataover = False
+	for i in range(len(map)):
+		if not mapdataover:
+			if map[i] == "x":
+				mapdataover = True
+			elif map[i] != 'm':
+				temp = temp + [scramble[map[i]]]
+			else:
+				newmap.append(temp)
+				temp = []
+		else:
+			nextlevel = nextlevel + str(map[i])
+
+	return newmap , nextlevel
 
 def loadpakitem(pak,filename):
 	with ZipFile(pak, 'r') as pakref:
