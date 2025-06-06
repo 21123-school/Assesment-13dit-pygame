@@ -2,6 +2,7 @@ import pygame
 import sys
 import json
 import mapload
+import math
 from pygame.locals import QUIT
 
 size = 2
@@ -31,9 +32,9 @@ class player:
 		self.lasttime = 0
 		self.dir = 1
 		self.maxfallspeed = 100
-		self.gravity = 40
-		self.jumphight = -120
-		self.speed = 38
+		self.gravity = 25
+		self.jumphight = -80
+		self.speed = 36
 		self.playerrect = pygame.Rect(( len(self.tilemap.currentlevel[0]) * halfcellsize - halfcellsize, len(self.tilemap.currentlevel) * halfcellsize - halfcellsize),(10,10))
 	
 	def playermove(self):
@@ -50,7 +51,7 @@ class player:
 
 		self.isonfloor = False
 
-		self.tempx = self.tilemap.global_to_map(pygame.math.Vector2(self.playerrect.x + self.movevector.x, self.playerrect.y))
+		self.tempx = self.tilemap.global_to_map(pygame.math.Vector2(self.playerrect.x + (13 * self.dir), self.playerrect.y))
 		self.tempy = self.tilemap.global_to_map(pygame.math.Vector2(self.playerrect.x, self.playerrect.y + (self.vely * dt) + halfcellsize))
 
 		if self.tilemap.currentlevel[int(self.tempy.y)][int(self.tempy.x)] != 2:
@@ -69,7 +70,7 @@ class player:
 
 	def draw(self):
 		if self.movevector.x != 0: 
-			self.dir = self.movevector.x 
+			self.dir = math.copysign(1,self.movevector.x) 
 
 		if self.movevector.x != 0 or self.movevector.y != 0:
 			if self.dir < 0:
