@@ -17,7 +17,9 @@ def buildmap(map):
 	mapdataover = False
 	for i in range(len(map)):
 		if not mapdataover:
-			if map[i] == "x":
+			if map[i] == "\r" or map[i] == "\n":
+				i += 1
+			elif map[i] == "x":
 				mapdataover = True
 			elif map[i] != 'm':
 				temp = temp + [scramble[map[i]]]
