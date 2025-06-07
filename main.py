@@ -20,9 +20,9 @@ dt = 1
 #musicsound = pygame.mixer.Sound("sound/music.wav")
 #musicsound.play(-1)
 
-class player:
+class players:
 	def __init__(self, tilemap):
-		self.playeranimations = [pygame.transform.scale(pygame.image.load(mapload.loadpakitem(sys.argv[1],f'{arg}/textures/playerstand.png')), (cellsize,cellsize)), pygame.transform.scale(pygame.image.load(mapload.loadpakitem(sys.argv[1],f'{arg}/textures/playerwalk.png')), (cellsize,cellsize))]
+		self.playeranimations = [pygame.transform.scale(texture['playerstand'], (cellsize,cellsize)), pygame.transform.scale(texture['playerwalk'], (cellsize,cellsize))]
 		self.isonfloor = False
 		self.vely = 0
 		self.moving = True
@@ -47,12 +47,17 @@ class player:
 		if not self.vely >= self.maxfallspeed:
 			self.vely += self.gravity * dt
 		if self.keys[pygame.K_w] and self.isonfloor:
+			sound['jump'].play()
 			self.vely += self.jumphight
 
 		self.isonfloor = False
 
 		self.tempx = self.tilemap.global_to_map(pygame.math.Vector2(self.playerrect.x + (13 * self.dir), self.playerrect.y))
 		self.tempy = self.tilemap.global_to_map(pygame.math.Vector2(self.playerrect.x, self.playerrect.y + (self.vely * dt) + halfcellsize))
+
+		if self.tilemap.currentlevel[int(self.tilemap.global_to_map(self.playerrect).y)][int(self.tilemap.global_to_map(self.playerrect).x)] == 1:
+			sound['goal'].play()
+			loadnewlevel()
 
 		if self.tilemap.currentlevel[int(self.tempy.y)][int(self.tempy.x)] != 2:
 			self.playerrect.y += self.vely * dt
@@ -89,22 +94,19 @@ class player:
 			else:
 				screen.blit(self.playeranimations[0],(self.playerrect.x + camera.x, self.playerrect.y + camera.y))
 
-class tilemap:
+class tilemaps:
 	def __init__(self,map):
 		self.currentlevel = map
+		self.tempcolor = list(texture.values())
 
 	def drawlevel(self):
-		tempcolor = [pygame.Color(100,255,0), pygame.Color(255,0,255), pygame.image.load(mapload.loadpakitem(sys.argv[1],f'{arg}/textures/missing.bmp'))]
 		for i in range(len(self.currentlevel)):
 			for j in range(len(self.currentlevel[i])):
 				self.tilerect = pygame.Rect( ((j*cellsize) + camera.x, (i*cellsize) + camera.y), (cellsize,cellsize) )
 				try:
-					screen.blit(tempcolor[self.currentlevel[i][j]],self.tilerect)
+					screen.blit(self.tempcolor[self.currentlevel[i][j]],self.tilerect)
 				except:
-					try:
-						pygame.draw.rect(screen, tempcolor[self.currentlevel[i][j]], self.tilerect) 
-					except:
-						pygame.draw.rect(screen, pygame.Color(255,255,255), self.tilerect) 
+					pass
 
 	def global_to_map(self, vector):
 		x = int((vector.x + halfcellsize) // cellsize)
@@ -115,17 +117,31 @@ def pygametext(txt):
 	sans = pygame.font.SysFont('Comic Sans MS', 20)
 	return sans.render(txt, False, (155, 155, 155))
 
+def loadnewlevel():
+	global nextlevel,newmap,camera,tilemap,player,processes,sound,texture
+
+	sound = {}
+	for i in mapload.ZipFile(sys.argv[1],'r').namelist():
+		if i.startswith(f'{arg}/sounds/') and i.endswith('.wav'):
+			sound[i.split('/')[-1].split('.')[0]] = pygame.mixer.Sound(mapload.loadpakitem(sys.argv[1], i))
+
+	texture = {}
+	for i in mapload.ZipFile(sys.argv[1],'r').namelist():
+		if i.startswith(f'{arg}/textures/') and i.endswith('.bmp'):
+			texture[i.split('/')[-1].split('.')[0]] = pygame.image.load(mapload.loadpakitem(sys.argv[1], i))
+		elif i.startswith(f'{arg}/textures/') and i.endswith('.png'):
+			texture[i.split('/')[-1].split('.')[0]] = pygame.image.load(mapload.loadpakitem(sys.argv[1], i))
+
+	newmap, nextlevel = mapload.buildmap(mapload.loadpaktext(sys.argv[1], f"{arg}/maps/{nextlevel}"))
+	camera = pygame.Rect(0,0,0,0)
+	tilemap = tilemaps(newmap)
+	player = players(tilemap)
+	processes = [tilemap.drawlevel, player.playermove]
+
 arg = str(sys.argv[1]).split('.')[0]
-newmap, nextlevel = mapload.buildmap(mapload.loadpaktext(sys.argv[1], f"{arg}/maps/local.map"))
+nextlevel = 'local.map'
 
-camera = pygame.Rect(0,0,0,0)
-
-tilemap = tilemap(newmap)
-print(nextlevel)
-
-player = player(tilemap)
-
-processes = [tilemap.drawlevel, player.playermove]
+loadnewlevel()
 
 while True:
 	camera.x = 0 - player.playerrect.x + (aspect[0] * cellsize) - cellsize
