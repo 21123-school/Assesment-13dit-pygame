@@ -62,10 +62,7 @@ class players:
 		if self.tilemap.currentlevel[int(self.tempy.y)][int(self.tempy.x)] != 2:
 			self.playerrect.y += self.vely * dt
 		else:
-			while self.tilemap.currentlevel[int(self.tempy.y)][int(self.tempy.x)] != 2:
-				self.playerrect.y += -1
-			if self.tilemap.currentlevel[int(self.tilemap.global_to_map(self.playerrect).y)][int(self.tempy.x)] != 2:
-				self.isonfloor = True
+			self.isonfloor = True
 			self.vely = 0
 
 		if self.tilemap.currentlevel[int(self.tempx.y)][int(self.tempx.x)] != 2:
