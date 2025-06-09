@@ -140,6 +140,8 @@ def loadnewlevel():
 	player = players(tilemap)
 	processes = [tilemap.drawlevel, player.playermove]
 
+#start of game logic
+
 arg = str(sys.argv[1]).split('.')[0]
 nextlevel = 'local.map'
 
