@@ -36,6 +36,11 @@ class players:
 		self.jumphight = -80
 		self.speed = 36
 		self.playerrect = pygame.Rect(( len(self.tilemap.currentlevel[0]) * halfcellsize - halfcellsize, len(self.tilemap.currentlevel) * halfcellsize - halfcellsize),(10,10))
+		for y in range(len(self.tilemap.currentlevel)):
+			for x in range(len(self.tilemap.currentlevel[0])):
+				if self.tilemap.currentlevel[y][x] == 0:
+					self.playerrect.x = x * cellsize
+					self.playerrect.y = y * cellsize - halfcellsize
 	
 	def playermove(self):
 		self.animationdelay = int(clock.get_fps()) / 8
