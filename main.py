@@ -54,6 +54,10 @@ class players:
 					return
 	
 	def playermove(self):
+		if self.hp < 1:
+			self.hp = 3
+			nextlevel = 'local.map'
+			loadnewlevel()
 		#sets animation to run 8 times a second i hope
 		self.animationdelay = int(clock.get_fps()) / 8
 		self.keys = pygame.key.get_pressed()
