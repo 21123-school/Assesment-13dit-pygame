@@ -12,6 +12,7 @@ halfcellsize = cellsize / 2
 
 #camera
 camera = pygame.Rect(0,0,0,0)
+starthp = 3
 
 #pygame set up
 pygame.init()
@@ -54,14 +55,19 @@ class players:
 					return
 	
 	def playermove(self):
+		#checks if dead
 		if self.hp < 1:
 			self.hp = 3
 			nextlevel = 'local.map'
 			loadnewlevel()
+
 		#sets animation to run 8 times a second i hope
 		self.animationdelay = int(clock.get_fps()) / 8
 		self.keys = pygame.key.get_pressed()
 		
+		if self.keys[pygame.K_0]:
+			mapload.savefile(sys.argv[2],level,self.hp)
+
 		#used for converting the bools from keys[pygame.K_*]] into movement speed
 		self.BoolToInt = {True: 0, False: self.speed}
 		#gets wasd into a vector
@@ -157,7 +163,7 @@ def pygametext(txt):
 	return sans.render(txt, False, (155, 155, 155))
 
 def loadnewlevel():
-	global nextlevel,newmap,camera,tilemap,player,processes,sound,texture
+	global nextlevel,newmap,camera,tilemap,player,processes,sound,texture,level
 
 	#puts all sounds of type *.wav into a dictionary
 	sound = {}
@@ -172,23 +178,34 @@ def loadnewlevel():
 			texture[i.split('/')[-1].split('.')[0]] = pygame.image.load(mapload.loadpakitem(sys.argv[1], i))
 		elif i.startswith(f'{arg}/textures/') and i.endswith('.png'):
 			texture[i.split('/')[-1].split('.')[0]] = pygame.image.load(mapload.loadpakitem(sys.argv[1], i))
-
 	#resets processes loop remakes the tilemap, and player objects and gets name of next level
+	level = nextlevel
 	newmap, nextlevel = mapload.buildmap(mapload.loadpaktext(sys.argv[1], f"{arg}/maps/{nextlevel}"))
 	tilemap = tilemaps(newmap)
 	try:
-		player = players(tilemap,player.hp)
+		player = players(tilemap, player.hp)
 	except:
-		player = players(tilemap)
+		player = players(tilemap, starthp)
 	processes = [tilemap.drawlevel, player.playermove]
+
+def loadsav():
+	nextlevel, starthp = mapload.buildsav(sys.argv[2])
+	player.hp = starthp
+	loadnewlevel()
 
 #start of game logic
 #find used *.pak
 arg = str(sys.argv[1]).split('.')[0]
 #set starting map
+level = ''
 nextlevel = 'local.map'
 
 loadnewlevel()
+
+try:
+	loadsav()
+except:
+	pass
 
 while True:
 	#center camera

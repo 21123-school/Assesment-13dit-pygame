@@ -37,3 +37,13 @@ def loadpaktext(pak,filename):
 			read = file.read()
 			content = read.decode('utf-8')
 		return content
+
+def buildsav(filename):
+	with open(filename) as f:
+		text = f.read()
+		temp = text.split('x')
+		return temp[0], int(temp[1])
+
+def savefile(filename,levelname,hp):
+	with open(filename, "w") as file:
+    		file.write(f"{levelname}x{hp}")
