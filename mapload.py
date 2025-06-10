@@ -1,7 +1,10 @@
 from zipfile import ZipFile
 from io import BytesIO
+import os
+import random
 
 scramble = {'g':0,'f':1,'t':2,'s':3,'e':4,'m':8}
+randomfilename = str(random.randint(100, 999)) + '.sav'
 
 def buildmap(map):
 	temp = []
@@ -39,11 +42,15 @@ def loadpaktext(pak,filename):
 		return content
 
 def buildsav(filename):
-	with open(filename) as f:
+	with open('SAVES\\' + filename) as f:
 		text = f.read()
 		temp = text.split('x')
 		return temp[0], int(temp[1])
 
 def savefile(filename,levelname,hp):
-	with open(filename, "w") as file:
+	if filename == '':
+		filename = randomfilename
+	if not os.path.exists("SAVES"):
+		os.makedirs("SAVES")
+	with open('SAVES\\' + filename, "w") as file:
     		file.write(f"{levelname}x{hp}")

@@ -58,15 +58,17 @@ class players:
 		#checks if dead
 		if self.hp < 1:
 			self.hp = 3
-			nextlevel = 'local.map'
-			loadnewlevel()
+			loadnewlevel('local.map')
 
 		#sets animation to run 8 times a second i hope
 		self.animationdelay = int(clock.get_fps()) / 8
 		self.keys = pygame.key.get_pressed()
 		
 		if self.keys[pygame.K_0]:
-			mapload.savefile(sys.argv[2],level,self.hp)
+			try:
+				mapload.savefile(sys.argv[2],level,self.hp)
+			except:
+				mapload.savefile('',level,self.hp)
 
 		#used for converting the bools from keys[pygame.K_*]] into movement speed
 		self.BoolToInt = {True: 0, False: self.speed}
@@ -162,9 +164,10 @@ def pygametext(txt):
 	sans = pygame.font.SysFont('Comic Sans MS', 20)
 	return sans.render(txt, False, (155, 155, 155))
 
-def loadnewlevel():
+def loadnewlevel(nextlevelrand='null'):
 	global nextlevel,newmap,camera,tilemap,player,processes,sound,texture,level
-
+	level = nextlevel
+	print(nextlevel)
 	#puts all sounds of type *.wav into a dictionary
 	sound = {}
 	for i in mapload.ZipFile(sys.argv[1],'r').namelist():
@@ -179,8 +182,10 @@ def loadnewlevel():
 		elif i.startswith(f'{arg}/textures/') and i.endswith('.png'):
 			texture[i.split('/')[-1].split('.')[0]] = pygame.image.load(mapload.loadpakitem(sys.argv[1], i))
 	#resets processes loop remakes the tilemap, and player objects and gets name of next level
-	level = nextlevel
-	newmap, nextlevel = mapload.buildmap(mapload.loadpaktext(sys.argv[1], f"{arg}/maps/{nextlevel}"))
+	if nextlevelrand == 'null':
+		newmap, nextlevel = mapload.buildmap(mapload.loadpaktext(sys.argv[1], f"{arg}/maps/{nextlevel}"))
+	else:
+		newmap, nextlevel = mapload.buildmap(mapload.loadpaktext(sys.argv[1], f"{arg}/maps/{nextlevelrand}"))
 	tilemap = tilemaps(newmap)
 	try:
 		player = players(tilemap, player.hp)
@@ -191,7 +196,7 @@ def loadnewlevel():
 def loadsav():
 	nextlevel, starthp = mapload.buildsav(sys.argv[2])
 	player.hp = starthp
-	loadnewlevel()
+	loadnewlevel(nextlevel)
 
 #start of game logic
 #find used *.pak
@@ -201,7 +206,6 @@ level = ''
 nextlevel = 'local.map'
 
 loadnewlevel()
-
 try:
 	loadsav()
 except:

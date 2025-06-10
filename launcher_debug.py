@@ -12,7 +12,7 @@ filetype = "*.pak"
 files = [os.path.basename(f) for f in glob.glob(filetype)]
 
 # Get all .sav files
-filetype2 = "*.sav"
+filetype2 = "SAVES/*.sav"
 files2 = [os.path.basename(f) for f in glob.glob(filetype2)]
 
 root = Tk()
