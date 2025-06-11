@@ -1,9 +1,9 @@
-I don't remeber what this doc is  normally used for so I will info dump here so I don't forget.
+I don't rememeber what this doc is  normally used for so I will info dump here so I don't forget.
 
 ------------
 launcher.pyw
 
-this just automates starting main.py has a *.pak selecter so you can have multiple *.pak files this leads to a possibility for easy mod making although it will most likey be unused
+this just automates starting main.py has a *.pak selecter so you can have multiple *.pak files this leads to a possibility for easy mod making although it will most likey be unused this also has a *.sav selector
 
 I might remove this file before hand in as it's not required and I don't think it will.
 
