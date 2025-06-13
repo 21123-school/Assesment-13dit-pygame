@@ -3,7 +3,7 @@ from io import BytesIO
 import os
 import random
 
-scramble = {'g':0,'f':1,'t':2,'s':3,'e':4,'m':8}
+scramble = {'g':0,'f':1,'t':2,'s':3,'e':4,'m':8,'b':5}
 randomfilename = str(random.randint(100, 999)) + '.sav'
 
 def buildmap(map):
