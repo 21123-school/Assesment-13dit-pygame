@@ -264,7 +264,7 @@ def loadnewlevel(nextlevelrand='null'):
             player = players(tilemap, starthp)
     processes = [tilemap.drawlevel, player.playermove]
 
-    tempspawn= []
+    tempspawn = []
     for y in range(len(tilemap.currentlevel)):
         for x in range(len(tilemap.currentlevel[0])):
             if tilemap.currentlevel[y][x] == 5:
