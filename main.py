@@ -56,11 +56,11 @@ class players:
 					self.playerrect.y = self.start.y
 					return
 
-	def move_towards(self, p_from, p_to, p_delta):
-		if abs(p_to - p_from) <= p_delta:
-			return p_to
-		direction = (p_to > p_from) - (p_to < p_from)  # sign function
-		return p_from + direction * p_delta
+	def move_towards(self, mfrom, mto, bmuch):
+		if abs(mto - mfrom) <= bmuch:
+			return mto
+		direction = int(math.copysign(1, mto - mfrom))  # sign function
+		return mfrom + direction * bmuch
 
 	def playermove(self):
 		#checks if dead
@@ -79,7 +79,7 @@ class players:
 				mapload.savefile('',level,self.hp)
 
 		if self.keys[pygame.K_1]:
-			nonplayer = [ nonplayers(tilemap) ]
+			nonplayer = [ nonplayers(tilemap, 3, 3) ]
 			processes.append(nonplayer[-1].playermove)
 
 		#used for converting the bools from keys[pygame.K_*]] into movement speed
@@ -110,7 +110,7 @@ class players:
 			sound['goal'].play()
 			loadnewlevel()
 		elif self.tilemap.currentlevel[int(self.tilemap.global_to_map(self.playerrect).y)][int(self.tilemap.global_to_map(self.playerrect).x)] == 4:
-			sound['jump'].play()
+			sound['hit'].play()
 			self.playerrect.x = self.start.x
 			self.playerrect.y = self.start.y
 			self.hp -= 1
@@ -138,7 +138,7 @@ class players:
 			self.direction = math.copysign(1,self.movevector.x)
 
 		#if moving or jumping use walking animation if not use standing sprite
-		if self.velocityX != 0 or self.movevector.y != 0:
+		if self.velocityX != 0:
 			if self.direction < 0:
 				screen.blit(pygame.transform.flip(self.playeranimations[{True:1,False:0}[self.animation]], True, False),(self.playerrect.x + camera.x, self.playerrect.y + camera.y))
 			else:
@@ -148,6 +148,7 @@ class players:
 			if self.currentanimationdelay >= self.animationdelay:
 				self.animation = not self.animation
 				self.currentanimationdelay = 0
+				sound['walk'].play()
 			else:
 				self.currentanimationdelay += 1
 		else:
@@ -188,7 +189,7 @@ class nonplayers:
 
 		self.isonfloor = False
 
-				#used for collison math converts global coords to tilemap coords with some modifiers
+		#used for collison math converts global coords to tilemap coords with some modifiers
 		self.tempx = self.tilemap.global_to_map(pygame.math.Vector2(self.playerrect.x + (13 * self.direction), self.playerrect.y + 14))
 		self.tempy = self.tilemap.global_to_map(pygame.math.Vector2(self.playerrect.x, self.playerrect.y + (self.velocityY * dt) + halfcellsize))
 
@@ -239,10 +240,10 @@ class tilemaps:
 									pass
 
 	def global_to_map(self, vector):
-			#converts global units to tilemap coords
-			x = int((vector.x + halfcellsize) // cellsize)
-			y = int((vector.y + halfcellsize) // cellsize)
-			return pygame.math.Vector2(x, y)
+		#converts global units to tilemap coords
+		x = int((vector.x + halfcellsize) // cellsize)
+		y = int((vector.y + halfcellsize) // cellsize)
+		return pygame.math.Vector2(x, y)
 
 def pygametext(txt):
 	#sets up text for display
