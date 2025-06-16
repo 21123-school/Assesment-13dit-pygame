@@ -95,7 +95,7 @@ class players:
                 if self.movevector.x != 0 and self.velocityX < self.maxspeed:
                         self.velocityX = self.move_towards(self.velocityX, self.maxspeed * self.direction, self.speed)
                 else:
-                        self.velocityX = self.move_towards(self.velocityX, 0, self.speed/2)
+                        self.velocityX = self.move_towards(self.velocityX, 0, self.speed / 2)
 
                 #do gravity acceleration or jump
                 if not self.velocityY >= self.maxfallspeed:
