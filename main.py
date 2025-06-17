@@ -17,13 +17,11 @@ starthp = 3
 # pygame set up
 pygame.init()
 
-screen = pygame.display.set_mode(
-    ((aspect[0] * size) * cellsize, (aspect[1] * size) * cellsize)
-)
+screen = pygame.display.set_mode(((aspect[0] * size) * cellsize, (aspect[1] * size) * cellsize))
 
-# size = 2.5
-# screen = pygame.display.set_mode(((aspect[0]*size)*cellsize, (aspect[1]*size)*cellsize))
-# size = 2
+#size = 2.5
+#screen = pygame.display.set_mode(((aspect[0]*size)*cellsize, (aspect[1]*size)*cellsize))
+#size = 2
 
 clock = pygame.time.Clock()
 fps = 120
@@ -49,7 +47,7 @@ class players:
         self.maxspeed = 40
         self.gravity = 25
         self.jumphight = -80
-        self.speed = 0.5
+        self.speed = 5
 
         # setup player rect
         self.playeranimations = [
@@ -114,9 +112,9 @@ class players:
         )
 
         if self.movevector.x != 0 and abs(self.velocityX) < self.maxspeed:
-            self.velocityX = self.move_towards(self.velocityX, self.maxspeed * self.direction, self.speed)
+            self.velocityX = self.move_towards(self.velocityX, self.maxspeed * self.direction, self.speed * dt)
         else:
-            self.velocityX = self.move_towards(self.velocityX, 0, self.speed)
+            self.velocityX = self.move_towards(self.velocityX, 0, self.speed * dt)
 
         # do gravity acceleration or jump
         if not self.velocityY >= self.maxfallspeed:
@@ -128,19 +126,18 @@ class players:
         self.isonfloor = False
 
         # used for collison math converts global coords to tilemap coords with some modifiers
-        self.tempx = self.tilemap.global_to_map(
-            pygame.math.Vector2(
-                self.playerrect.x + (13 * math.copysign(1, self.velocityX)),
-                self.playerrect.y + 14,
-            )
-        )
-        self.tempy = self.tilemap.global_to_map(
-            pygame.math.Vector2(
-                self.playerrect.x,
-                self.playerrect.y + (self.velocityY * dt) + halfcellsize,
-            )
-        )
+        self.tempx = self.tilemap.global_to_map(pygame.math.Vector2(self.playerrect.x + (13 * math.copysign(1, self.velocityX)),self.playerrect.y + 14,))
+        self.tempy = self.tilemap.global_to_map(pygame.math.Vector2(self.playerrect.x,self.playerrect.y + (self.velocityY * dt) + halfcellsize,))
 
+        self.tempx.x = max(0, self.tempx.x)
+        self.tempx.x = min(len(self.tilemap.currentlevel[0]) - 1, self.tempx.x)
+        self.tempx.y = max(0, self.tempx.y)
+        self.tempx.y = min(len(self.tilemap.currentlevel) - 1, self.tempx.y)
+        self.tempy.x = max(0, self.tempy.x)
+        self.tempy.x = min(len(self.tilemap.currentlevel[0]) - 1, self.tempy.x)
+        self.tempy.y = max(0, self.tempy.y)
+        self.tempy.y = min(len(self.tilemap.currentlevel) - 1, self.tempy.y)
+        
         # checks if level end reached
         if (self.tilemap.currentlevel[int(self.tilemap.global_to_map(self.playerrect).y)][int(self.tilemap.global_to_map(self.playerrect).x)]== 1):
             sound["goal"].play()
@@ -155,7 +152,7 @@ class players:
         if self.tilemap.currentlevel[int(self.tempy.y)][int(self.tempy.x)] != 2:
             self.playerrect.y += self.velocityY * dt
         else:
-            if (self.tilemap.currentlevel[int(self.tilemap.global_to_map(self.playerrect).y)][int(self.tempy.x)]!= 2):
+            if self.tilemap.currentlevel[int(self.tilemap.global_to_map(self.playerrect).y)][int(self.tempy.x)]!= 2:
                 self.isonfloor = True
             self.velocityY = 0
 
@@ -188,15 +185,9 @@ class players:
                 self.currentanimationdelay += 1
         else:
             if self.direction < 0:
-                screen.blit(
-                    pygame.transform.flip(self.playeranimations[0], True, False),
-                    (self.playerrect.x + camera.x, self.playerrect.y + camera.y),
-                )
+                screen.blit(pygame.transform.flip(self.playeranimations[0], True, False),(self.playerrect.x + camera.x, self.playerrect.y + camera.y))
             else:
-                screen.blit(
-                    self.playeranimations[0],
-                    (self.playerrect.x + camera.x, self.playerrect.y + camera.y),
-                )
+                screen.blit(self.playeranimations[0],(self.playerrect.x + camera.x, self.playerrect.y + camera.y))
 
 
 #####################################
@@ -272,8 +263,11 @@ class nonplayers:
             self.playerrect.x += self.velocityX * dt
         else:
             self.direction = 0 - self.direction
-
-        self.draw()
+            
+        #nam = str(process).split('at')[1]
+        #print(f"{nam}: {self.playerrect.x + camera.x} < {camera.x} = {self.playerrect.x + camera.x < camera.x}")
+        if self.playerrect.x + camera.x > camera.x and self.playerrect.x + camera.x < ((aspect[0] * size) * cellsize):
+            self.draw()
 
     def draw(self):
         if self.direction < 0:
@@ -429,26 +423,20 @@ while True:
         process()
 
     # x/y coords
-    screen.blit(
-        pygametext(
-            "X: "
-            + str(tilemap.global_to_map(player.playerrect).x)
-            + " Y: "
-            + str(tilemap.global_to_map(player.playerrect).y)
-        ),
-        (1, 1, 1, 1),
-    )
-    screen.blit(
-        pygametext("Hp: " + str(player.hp)),
-        ((aspect[0] * (cellsize * 2)) - 60, 1, 1, 1),
-    )
+    screen.blit(pygametext("X: "+ str(tilemap.global_to_map(player.playerrect).x)+ " Y: "+ str(tilemap.global_to_map(player.playerrect).y)),(1, 1, 1, 1))
+    screen.blit(pygametext("Hp: " + str(player.hp)),((aspect[0] * (cellsize * 2)) - 60, 1, 1, 1))
 
     # idk what this does but if i remove it pygame crashes
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
-
+    """        
+    if int(clock.get_fps()) > 5:
+        for _ in range(20):
+            nonplayer = [nonplayers(tilemap, 3, 3)]
+            processes.append(nonplayer[-1].playermove)
+    """    
     # displays fps on title bar
     pygame.display.set_caption("FPS: " + str(int(clock.get_fps())))
 
