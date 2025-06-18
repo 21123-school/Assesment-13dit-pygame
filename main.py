@@ -54,13 +54,7 @@ class players:
             pygame.transform.scale(texture["playerstand"], (cellsize, cellsize)),
             pygame.transform.scale(texture["playerwalk"], (cellsize, cellsize)),
         ]
-        self.playerrect = pygame.Rect(
-            (
-                len(self.tilemap.currentlevel[0]) * halfcellsize - halfcellsize,
-                len(self.tilemap.currentlevel) * halfcellsize - halfcellsize,
-            ),
-            (10, 10),
-        )
+        self.playerrect = pygame.Rect((len(self.tilemap.currentlevel[0]) * halfcellsize - halfcellsize,len(self.tilemap.currentlevel) * halfcellsize - halfcellsize, ),(10, 10))
 
         # find map start tile if available
         for y in range(len(self.tilemap.currentlevel)):
@@ -138,7 +132,7 @@ class players:
         self.tempy.y = max(0, self.tempy.y)
         self.tempy.y = min(len(self.tilemap.currentlevel) - 1, self.tempy.y)
         
-        # checks if level end reached
+        # checks if level end reacheds
         if (self.tilemap.currentlevel[int(self.tilemap.global_to_map(self.playerrect).y)][int(self.tilemap.global_to_map(self.playerrect).x)]== 1):
             sound["goal"].play()
             loadnewlevel()
@@ -431,12 +425,12 @@ while True:
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
-    """        
-    if int(clock.get_fps()) > 5:
+    '''      
+    if int(clock.get_fps()) > 20:
         for _ in range(20):
             nonplayer = [nonplayers(tilemap, 3, 3)]
             processes.append(nonplayer[-1].playermove)
-    """    
+    '''  
     # displays fps on title bar
     pygame.display.set_caption("FPS: " + str(int(clock.get_fps())))
 
