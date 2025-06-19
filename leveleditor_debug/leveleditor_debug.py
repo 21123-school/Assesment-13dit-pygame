@@ -77,8 +77,12 @@ def save(level):
         for x in range(len(level[0])):
             newlevel = newlevel + str(unscramble[level[y][x]])
         newlevel = newlevel + 'm'
-
+    newlevel = newlevel + 'x' + input('nextlevel name: ')
     print(newlevel)
+    
+    with open(input('name of current level: '), 'x') as f:
+        f.write(newlevel)
+        
     while True:
         pass
 
