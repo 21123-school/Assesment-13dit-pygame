@@ -18,8 +18,6 @@ starthp = 3
 # pygame set up
 pygame.init()
 
-screen = pygame.display.set_mode(((aspect[0] * size) * cellsize, (aspect[1] * size) * cellsize))
-
 clock = pygame.time.Clock()
 fps = 120
 dt = 1
@@ -60,6 +58,7 @@ class tilemaps:
         y = int((vector.y + halfcellsize) // cellsize)
         return pygame.math.Vector2(x, y)
 
+
 texture = {}
 for i in mapload.ZipFile('debug.pak', "r").namelist():
     if i.startswith(f"debug/textures/") and i.endswith(".bmp"):
@@ -86,17 +85,17 @@ def save(level):
     while True:
         pass
 
-newmap = [
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    ]
+newmap = []
+tem = []
+for x in range(int(input('x: '))):
+    tem.append(3)
+for y in range(int(input('y: '))):
+    newmap.append(tem)
+
+newmap = str(newmap)
+newmap = eval(newmap)
+
+screen = pygame.display.set_mode(((aspect[0] * size) * cellsize, (aspect[1] * size) * cellsize))
 
 tilemap = tilemaps(newmap)
 player = players(tilemap)
@@ -116,7 +115,7 @@ while True:
 
     mx, my = pygame.mouse.get_pos()
     mx, my = tilemap.global_to_map(pygame.Vector2(round(mx) - camera.x - halfcellsize, round(my) - camera.y - halfcellsize))
-
+    #print(mx, my)
     if pygame.mouse.get_pressed()[0]:
         tilemap.currentlevel[int(my)][int(mx)] = selected
 

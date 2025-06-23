@@ -47,7 +47,7 @@ class players:
         self.maxspeed = 40
         self.gravity = 25
         self.jumphight = -80
-        self.speed = 5
+        self.speed = 15
 
         # setup player rect
         self.playeranimations = [
@@ -73,11 +73,17 @@ class players:
         direction = int(math.copysign(1, mto - mfrom))  # sign function
         return mfrom + direction * bmuch
 
+    def died(self):
+        sound["hit"].play()
+        self.playerrect.x = self.start.x
+        self.playerrect.y = self.start.y
+        self.hp -= 1
+
     def playermove(self):
         # checks if dead
         if self.hp < 1:
             self.hp = 3
-            loadnewlevel("local.map")
+            loadnewlevel("a1m1.map")
 
         # sets animation to run 8 times a second i hope
         self.animationdelay = int(clock.get_fps()) / 8
@@ -89,21 +95,16 @@ class players:
             except:
                 mapload.savefile("", level, self.hp)
 
+        '''
         if self.keys[pygame.K_1]:
             nonplayer = [nonplayers(tilemap, 3, 3)]
             processes.append(nonplayer[-1].playermove)
+        '''
 
         # used for converting the bools from keys[pygame.K_*]] into movement speed
         self.BoolToInt = {True: 0, False: self.speed}
         # gets wasd into a vector
-        self.movevector = pygame.math.Vector2(
-            (
-                self.BoolToInt[self.keys[pygame.K_a]] + 0 - self.BoolToInt[self.keys[pygame.K_d]]
-            ),
-            (
-                self.BoolToInt[self.keys[pygame.K_w]] + 0 - self.BoolToInt[self.keys[pygame.K_s]]
-            ),
-        )
+        self.movevector = pygame.math.Vector2((self.BoolToInt[self.keys[pygame.K_a]] + 0 - self.BoolToInt[self.keys[pygame.K_d]]),(self.BoolToInt[self.keys[pygame.K_w]] + 0 - self.BoolToInt[self.keys[pygame.K_s]]),)
 
         if self.movevector.x != 0 and abs(self.velocityX) < self.maxspeed:
             self.velocityX = self.move_towards(self.velocityX, self.maxspeed * self.direction, self.speed * dt)
@@ -137,10 +138,7 @@ class players:
             sound["goal"].play()
             loadnewlevel()
         elif (self.tilemap.currentlevel[int(self.tilemap.global_to_map(self.playerrect).y)][int(self.tilemap.global_to_map(self.playerrect).x)]== 4):
-            sound["hit"].play()
-            self.playerrect.x = self.start.x
-            self.playerrect.y = self.start.y
-            self.hp -= 1
+            self.died()
 
         # checks if off solid tile if yes gravity added if not reset velocityY and check if solid tile it roof if no is on floor true
         if self.tilemap.currentlevel[int(self.tempy.y)][int(self.tempy.x)] != 2:
@@ -225,6 +223,9 @@ class nonplayers:
         if not self.isonfloor:
             self.velocityY += self.gravity * dt
 
+        if player.playerrect.colliderect(self.playerrect):
+            player.died()
+
         self.isonfloor = False
 
         # used for collison math converts global coords to tilemap coords with some modifiers
@@ -291,17 +292,7 @@ class tilemaps:
 
     def drawlevel(self):
         start_row = max(0, int(0 - self.global_to_map(camera).y))
-        end_row = min(
-            len(self.currentlevel),
-            int(
-                self.global_to_map(
-                    pygame.math.Vector2(
-                        0, abs(camera.y - (aspect[1] * size) * cellsize)
-                    )
-                ).y
-            )
-            + 1,
-        )
+        end_row = min(len(self.currentlevel),int(self.global_to_map(pygame.math.Vector2(0, abs(camera.y - (aspect[1] * size) * cellsize))).y) + 1)
 
         start_column = max(0, int(0 - self.global_to_map(camera).x))
         end_column = min(len(self.currentlevel[0]),int(self.global_to_map(pygame.math.Vector2(abs(camera.x - (aspect[0] * size) * cellsize), 0)).x) + 1)
@@ -394,7 +385,7 @@ def loadsav():
 arg = str(sys.argv[1]).split(".")[0]
 # set starting map
 level = ""
-nextlevel = "local.map"
+nextlevel = "a1m1.map"
 
 loadnewlevel()
 try:
