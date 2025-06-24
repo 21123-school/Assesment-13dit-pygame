@@ -46,7 +46,7 @@ class players:
         self.maxfallspeed = 100
         self.maxspeed = 40
         self.gravity = 25
-        self.jumphight = -80
+        self.jumphight = -75
         self.speed = 15
 
         # setup player rect
@@ -252,12 +252,14 @@ class nonplayers:
             self.velocityX = self.move_towards(self.velocityX, self.maxspeed * self.direction, self.speed)
         else:
             self.velocityX = self.move_towards(self.velocityX, 0, self.speed)
-
+            
         # checks if moving will put you in wall if not move
-        if self.tilemap.currentlevel[int(self.tempx.y)][int(self.tempx.x)] != 2:
+        if self.tilemap.currentlevel[int(self.tempx.y)][int(self.tempx.x)] != 2 and self.tilemap.currentlevel[int(self.tempy.y)][int(self.tempy.x)] == 2:
             self.playerrect.x += self.velocityX * dt
         else:
             self.direction = 0 - self.direction
+            self.velocityX = self.move_towards(self.velocityX, self.maxspeed * self.direction, self.speed)
+            self.playerrect.x += self.velocityX * dt
             
         #nam = str(process).split('at')[1]
         #print(f"{nam}: {self.playerrect.x + camera.x} < {camera.x} = {self.playerrect.x + camera.x < camera.x}")
@@ -348,13 +350,9 @@ def loadnewlevel(nextlevelrand="null"):
             )
     # resets processes loop remakes the tilemap, and player objects and gets name of next level
     if nextlevelrand == "null":
-        newmap, nextlevel = mapload.buildmap(
-            mapload.loadpaktext(sys.argv[1], f"{arg}/maps/{nextlevel}")
-        )
+        newmap, nextlevel = mapload.buildmap(mapload.loadpaktext(sys.argv[1], f"{arg}/maps/{nextlevel}"))
     else:
-        newmap, nextlevel = mapload.buildmap(
-            mapload.loadpaktext(sys.argv[1], f"{arg}/maps/{nextlevelrand}")
-        )
+        newmap, nextlevel = mapload.buildmap(mapload.loadpaktext(sys.argv[1], f"{arg}/maps/{nextlevelrand}"))
     tilemap = tilemaps(newmap)
     try:
         player = players(tilemap, player.hp)
@@ -397,9 +395,7 @@ except:
 while True:
     # center camera
     camera.x = 0 - player.playerrect.x + (aspect[0] * cellsize) - cellsize
-    camera.y = (
-        0 - player.playerrect.y + (aspect[1] * (cellsize * 1.25)) - (cellsize * 1.25)
-    )
+    camera.y = 0 - player.playerrect.y + (aspect[1] * (cellsize * 1.25)) - (cellsize * 1.25)
 
     screen.fill(pygame.Color(11, 11, 11))  # to be removed
 

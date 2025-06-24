@@ -9,7 +9,7 @@ def zipdir(path, ziph):
                        os.path.relpath(os.path.join(root, file), 
                                        os.path.join(path, '..')))
 
-name = '..\\' + input('name folder for compression: ')
+name = input('name folder for compression: ')
 
 if input('do you really what to build data.pak [Y/N]: ').lower() == 'y':
     try:
@@ -17,7 +17,7 @@ if input('do you really what to build data.pak [Y/N]: ').lower() == 'y':
         print('old file removed making new file..')
     except:
         print('not found making new file..')
-    with zipfile.ZipFile(f'{name}.pak', 'w', zipfile.ZIP_DEFLATED) as zipf:
+    with zipfile.ZipFile(f'..\{name}.pak', 'w', zipfile.ZIP_DEFLATED) as zipf:
         zipdir(f'{name}/', zipf)
         print('new file created..')
     input('press enter to close..')

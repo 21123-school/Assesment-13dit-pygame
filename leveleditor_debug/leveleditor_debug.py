@@ -67,33 +67,37 @@ for i in mapload.ZipFile('debug.pak', "r").namelist():
         texture[i.split("/")[-1].split(".")[0]] = pygame.image.load(mapload.loadpakitem('debug.pak', i))
 
 def save(level):
-    scramble = {'g':0,'f':1,'t':2,'s':3,'e':4,'m':8,'b':5}
-    newlevel = ''
+    if input('save?: [Y/n]').lower() == 'y':
+        scramble = {'g':0,'f':1,'t':2,'s':3,'e':4,'m':8,'b':5}
+        newlevel = ''
 
-    unscramble = dict([(value, key) for key, value in scramble.items()])
+        unscramble = dict([(value, key) for key, value in scramble.items()])
 
-    for y in range(len(level)):
-        for x in range(len(level[0])):
-            newlevel = newlevel + str(unscramble[level[y][x]])
-        newlevel = newlevel + 'm'
-    newlevel = newlevel + 'x' + input('nextlevel name: ')
-    print(newlevel)
-    
-    with open(input('name of current level: '), 'x') as f:
-        f.write(newlevel)
+        for y in range(len(level)):
+            for x in range(len(level[0])):
+                newlevel = newlevel + str(unscramble[level[y][x]])
+            newlevel = newlevel + 'm'
+        newlevel = newlevel + 'x' + input('nextlevel name: ')
+        print(newlevel)
         
-    while True:
-        pass
+        with open('.\\data\\maps\\' + input('name of current level: '), 'w') as f:
+            f.write(newlevel)
 
-newmap = []
-tem = []
-for x in range(int(input('x: '))):
-    tem.append(3)
-for y in range(int(input('y: '))):
-    newmap.append(tem)
+try:
+    n = input('loadmap: ')
+    with open(f'.\data\maps\{n}', 'r') as file:
+        read = file.read()
+    newmap, nextlevel = mapload.buildmap(read)
+except:
+    newmap = []
+    tem = []
+    for x in range(int(input('x: '))):
+        tem.append(3)
+    for y in range(int(input('y: '))):
+        newmap.append(tem)
 
-newmap = str(newmap)
-newmap = eval(newmap)
+    newmap = str(newmap)
+    newmap = eval(newmap)
 
 screen = pygame.display.set_mode(((aspect[0] * size) * cellsize, (aspect[1] * size) * cellsize))
 
