@@ -302,12 +302,15 @@ class tilemaps:
         # display tile if texture available for tile *note map doesn't have to be square
         for i in range(start_row, end_row):
             for j in range(start_column, end_column):
-                self.tilerect = pygame.Rect(
-                    ((j * cellsize) + camera.x, (i * cellsize) + camera.y),
-                    (cellsize, cellsize),
-                )
+                self.tilerect = pygame.Rect(((j * cellsize) + camera.x, (i * cellsize) + camera.y),(cellsize, cellsize))
                 try:
+                    if self.currentlevel[i][j] == 4 or self.currentlevel[i][j] == 0 or self.currentlevel[i][j] == 1:
+                        screen.blit(self.textures[self.currentlevel[i - 1][j]], self.tilerect)
+                        
                     screen.blit(self.textures[self.currentlevel[i][j]], self.tilerect)
+                    
+                    if self.currentlevel[i][j] == 5:
+                        screen.blit(self.textures[self.currentlevel[i - 1][j]], self.tilerect)
                 except:
                     pass
 
@@ -325,8 +328,18 @@ def pygametext(txt):
 
 
 def loadnewlevel(nextlevelrand="null"):
-    global nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer
+    global nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message
     level = nextlevel
+
+    try:
+        waittime = int(clock.get_fps()) * 4
+        for i in range(waittime):
+            screen.fill(pygame.Color(11, 11, 11))
+            screen.blit(pygametext(message[1:]),(1, 1, 1, 1))
+            pygame.display.update()
+            clock.tick()
+    except:
+        pass
 
     nonplayer = []
     # puts all sounds of type *.wav into a dictionary
@@ -350,9 +363,9 @@ def loadnewlevel(nextlevelrand="null"):
             )
     # resets processes loop remakes the tilemap, and player objects and gets name of next level
     if nextlevelrand == "null":
-        newmap, nextlevel = mapload.buildmap(mapload.loadpaktext(sys.argv[1], f"{arg}/maps/{nextlevel}"))
+        newmap, nextlevel, message = mapload.buildmap(mapload.loadpaktext(sys.argv[1], f"{arg}/maps/{nextlevel}"))
     else:
-        newmap, nextlevel = mapload.buildmap(mapload.loadpaktext(sys.argv[1], f"{arg}/maps/{nextlevelrand}"))
+        newmap, nextlevel = mapload.buildmap(mapload.loadpaktext(sys.argv[1], f"{arg}/maps/{nextlevel}"))
     tilemap = tilemaps(newmap)
     try:
         player = players(tilemap, player.hp)
@@ -383,7 +396,7 @@ def loadsav():
 arg = str(sys.argv[1]).split(".")[0]
 # set starting map
 level = ""
-nextlevel = "a1m1.map"
+nextlevel = "loader.map"
 
 loadnewlevel()
 try:

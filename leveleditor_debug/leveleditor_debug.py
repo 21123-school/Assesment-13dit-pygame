@@ -77,7 +77,11 @@ def save(level):
             for x in range(len(level[0])):
                 newlevel = newlevel + str(unscramble[level[y][x]])
             newlevel = newlevel + 'm'
+            
         newlevel = newlevel + 'x' + input('nextlevel name: ')
+        
+        newlevel = newlevel + 'q' + input('message name: ')
+        
         print(newlevel)
         
         with open('.\\data\\maps\\' + input('name of current level: '), 'w') as f:
@@ -119,7 +123,7 @@ while True:
 
     mx, my = pygame.mouse.get_pos()
     mx, my = tilemap.global_to_map(pygame.Vector2(round(mx) - camera.x - halfcellsize, round(my) - camera.y - halfcellsize))
-    #print(mx, my)
+    
     if pygame.mouse.get_pressed()[0]:
         tilemap.currentlevel[int(my)][int(mx)] = selected
 
