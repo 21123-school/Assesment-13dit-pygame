@@ -59,6 +59,10 @@ ttk.Button(frm, text="Quit", command=root.destroy).grid(
     column=0, row=4, columnspan=2, pady=(5, 0)
 )
 
+ttk.Label(frm, text="*press 0 to save.").grid(
+    column=0, row=5, columnspan=2, pady=(0, 15)
+)
+
 # Center window
 root.update_idletasks()
 width = root.winfo_width()

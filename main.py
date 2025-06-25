@@ -12,23 +12,107 @@ halfcellsize = cellsize / 2
 
 # camera
 camera = pygame.Rect(0, 0, 0, 0)
-starthp = 3
+starthp = 300
 
 # pygame set up
 pygame.init()
 
 screen = pygame.display.set_mode(((aspect[0] * size) * cellsize, (aspect[1] * size) * cellsize))
 
-#size = 2.5
-#screen = pygame.display.set_mode(((aspect[0]*size)*cellsize, (aspect[1]*size)*cellsize))
-#size = 2
-
 clock = pygame.time.Clock()
 fps = 120
 dt = 1
-# musicsound = pygame.mixer.Sound("sound/music.wav")
-# musicsound.play(-1)
 
+#functions
+#****************************************************
+#****************************************************
+
+def pygametext(txt):
+    # sets up text for display
+    sans = pygame.font.SysFont("Comic Sans MS", 20)
+    return sans.render(txt, False, (155, 155, 155))
+
+#****************************************************
+
+def loadnewlevel(nextlevelrand="null"):
+    global nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message
+    level = nextlevel
+
+    try:
+        waittime = int(clock.get_fps()) * 0
+        for i in range(waittime):
+            processes[0]
+            pygame.display.update()
+            clock.tick(waittime/2)
+    except:
+        pass
+
+    try:
+        waittime = int(clock.get_fps()) * 0
+        for i in range(waittime):
+            screen.fill(pygame.Color(11, 11, 11))
+            screen.blit(pygametext(message[1:]),(1, 1, 1, 1))
+            pygame.display.update()
+            clock.tick(waittime/3)
+    except:
+        pass
+
+    nonplayer = []
+
+    # puts all sounds of type *.wav into a dictionary
+    sound = {}
+    for i in mapload.ZipFile(sys.argv[1], "r").namelist():
+        if i.startswith(f"{arg}/sounds/") and i.endswith(".wav"):
+            sound[i.split("/")[-1].split(".")[0]] = pygame.mixer.Sound(
+                mapload.loadpakitem(sys.argv[1], i)
+            )
+
+    # puts all images of type *bmp/*.png into a dictionary
+    texture = {}
+    for i in mapload.ZipFile(sys.argv[1], "r").namelist():
+        if i.startswith(f"{arg}/textures/") and i.endswith(".bmp"):
+            texture[i.split("/")[-1].split(".")[0]] = pygame.image.load(
+                mapload.loadpakitem(sys.argv[1], i)
+            )
+        elif i.startswith(f"{arg}/textures/") and i.endswith(".png"):
+            texture[i.split("/")[-1].split(".")[0]] = pygame.image.load(
+                mapload.loadpakitem(sys.argv[1], i)
+            )
+
+    # resets processes loop remakes the tilemap, and player objects and gets name of next level
+    if nextlevelrand == "null":
+        newmap, nextlevel, message = mapload.buildmap(mapload.loadpaktext(sys.argv[1], f"{arg}/maps/{nextlevel}"))
+    else:
+        newmap, nextlevel, message = mapload.buildmap(mapload.loadpaktext(sys.argv[1], f"{arg}/maps/{nextlevelrand}"))
+
+    tilemap = tilemaps(newmap)
+
+    try:
+        player = players(tilemap, player.hp)
+    except:
+        player = players(tilemap, starthp)
+
+    processes = [tilemap.drawlevel, player.playermove]
+
+    tempspawn = []
+    for y in range(len(tilemap.currentlevel)):
+        for x in range(len(tilemap.currentlevel[0])):
+            if tilemap.currentlevel[y][x] == 5:
+                tempspawn.append([x, y])
+    for i in range(len(tempspawn)):
+        nonplayer.append(nonplayers(tilemap, int(tempspawn[i][0]), int(tempspawn[i][1])))
+        processes.append(nonplayer[-1].playermove)
+
+#****************************************************
+
+def loadsav():
+    nextlevel, starthp = mapload.buildsav(sys.argv[2])
+    player.hp = starthp
+    loadnewlevel(nextlevel)
+
+#classes
+#****************************************************
+#****************************************************
 
 class players:
     def __init__(self, tilemap, hp=3):
@@ -182,7 +266,8 @@ class players:
                 screen.blit(self.playeranimations[0],(self.playerrect.x + camera.x, self.playerrect.y + camera.y))
 
 
-#####################################
+#****************************************************
+
 class nonplayers:
     def __init__(self, tilemap, x, y, hp=3):
         # vars set up
@@ -283,8 +368,7 @@ class nonplayers:
         #print(f"{nam}: {abs(self.velocityX)}/{self.maxspeed}")
 
 
-#####################################
-
+#****************************************************
 
 class tilemaps:
     def __init__(self, map):
@@ -320,90 +404,21 @@ class tilemaps:
         y = int((vector.y + halfcellsize) // cellsize)
         return pygame.math.Vector2(x, y)
 
+#main
+#****************************************************
+#****************************************************
 
-def pygametext(txt):
-    # sets up text for display
-    sans = pygame.font.SysFont("Comic Sans MS", 20)
-    return sans.render(txt, False, (155, 155, 155))
-
-
-def loadnewlevel(nextlevelrand="null"):
-    global nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message
-    level = nextlevel
-
-    try:
-        waittime = int(clock.get_fps()) * 4
-        for i in range(waittime):
-            screen.fill(pygame.Color(11, 11, 11))
-            screen.blit(pygametext(message[1:]),(1, 1, 1, 1))
-            pygame.display.update()
-            clock.tick()
-    except:
-        pass
-
-    nonplayer = []
-    # puts all sounds of type *.wav into a dictionary
-    sound = {}
-    for i in mapload.ZipFile(sys.argv[1], "r").namelist():
-        if i.startswith(f"{arg}/sounds/") and i.endswith(".wav"):
-            sound[i.split("/")[-1].split(".")[0]] = pygame.mixer.Sound(
-                mapload.loadpakitem(sys.argv[1], i)
-            )
-
-    # puts all images of type *bmp/*.png into a dictionary
-    texture = {}
-    for i in mapload.ZipFile(sys.argv[1], "r").namelist():
-        if i.startswith(f"{arg}/textures/") and i.endswith(".bmp"):
-            texture[i.split("/")[-1].split(".")[0]] = pygame.image.load(
-                mapload.loadpakitem(sys.argv[1], i)
-            )
-        elif i.startswith(f"{arg}/textures/") and i.endswith(".png"):
-            texture[i.split("/")[-1].split(".")[0]] = pygame.image.load(
-                mapload.loadpakitem(sys.argv[1], i)
-            )
-    # resets processes loop remakes the tilemap, and player objects and gets name of next level
-    if nextlevelrand == "null":
-        newmap, nextlevel, message = mapload.buildmap(mapload.loadpaktext(sys.argv[1], f"{arg}/maps/{nextlevel}"))
-    else:
-        newmap, nextlevel = mapload.buildmap(mapload.loadpaktext(sys.argv[1], f"{arg}/maps/{nextlevel}"))
-    tilemap = tilemaps(newmap)
-    try:
-        player = players(tilemap, player.hp)
-    except:
-        player = players(tilemap, starthp)
-    processes = [tilemap.drawlevel, player.playermove]
-
-    tempspawn = []
-    for y in range(len(tilemap.currentlevel)):
-        for x in range(len(tilemap.currentlevel[0])):
-            if tilemap.currentlevel[y][x] == 5:
-                tempspawn.append([x, y])
-    for i in range(len(tempspawn)):
-        nonplayer.append(
-            nonplayers(tilemap, int(tempspawn[i][0]), int(tempspawn[i][1]))
-        )
-        processes.append(nonplayer[-1].playermove)
-
-
-def loadsav():
-    nextlevel, starthp = mapload.buildsav(sys.argv[2])
-    player.hp = starthp
-    loadnewlevel(nextlevel)
-
-
-# start of game logic
 # find used *.pak
 arg = str(sys.argv[1]).split(".")[0]
 # set starting map
 level = ""
 nextlevel = "loader.map"
 
-loadnewlevel()
+loadnewlevel(nextlevel)
 try:
     loadsav()
 except:
     pass
-
 
 while True:
     # center camera
@@ -425,16 +440,18 @@ while True:
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
+
     '''      
     if int(clock.get_fps()) > 20:
         for _ in range(20):
             nonplayer = [nonplayers(tilemap, 3, 3)]
             processes.append(nonplayer[-1].playermove)
     '''  
+
     # displays fps on title bar
     pygame.display.set_caption("FPS: " + str(int(clock.get_fps())))
 
     # update pygame and get deltatime
     pygame.display.update()
     dt = clock.tick() / 100
-    print(len(processes))
+    #print(len(processes))

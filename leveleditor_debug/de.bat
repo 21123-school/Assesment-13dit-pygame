@@ -1,2 +1,0 @@
-python leveleditor_debug.py
-pause
