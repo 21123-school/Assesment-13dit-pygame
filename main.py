@@ -39,21 +39,22 @@ def loadnewlevel(nextlevelrand="null"):
     level = nextlevel
 
     try:
-        waittime = int(clock.get_fps()) * 0
+        waittime = int(clock.get_fps()) * 2
         for i in range(waittime):
             processes[0]
             pygame.display.update()
             clock.tick(waittime/2)
     except:
         pass
-
+    
     try:
-        waittime = int(clock.get_fps()) * 0
-        for i in range(waittime):
-            screen.fill(pygame.Color(11, 11, 11))
-            screen.blit(pygametext(message[1:]),(1, 1, 1, 1))
-            pygame.display.update()
-            clock.tick(waittime/3)
+        if message != 'q':
+            waittime = int(clock.get_fps()) * 2
+            for i in range(waittime):
+                screen.fill(pygame.Color(11, 11, 11))
+                screen.blit(pygametext(message[1:]),(1, 1, 1, 1))
+                pygame.display.update()
+                clock.tick(waittime/2)
     except:
         pass
 
@@ -144,9 +145,7 @@ class players:
         for y in range(len(self.tilemap.currentlevel)):
             for x in range(len(self.tilemap.currentlevel[0])):
                 if self.tilemap.currentlevel[y][x] == 0:
-                    self.start = pygame.math.Vector2(
-                        x * cellsize, y * cellsize - halfcellsize
-                    )
+                    self.start = pygame.math.Vector2(x * cellsize, y * cellsize - halfcellsize)
                     self.playerrect.x = self.start.x
                     self.playerrect.y = self.start.y
                     return
@@ -193,8 +192,10 @@ class players:
         if self.movevector.x != 0 and abs(self.velocityX) < self.maxspeed:
             self.velocityX = self.move_towards(self.velocityX, self.maxspeed * self.direction, self.speed * dt)
         else:
-            self.velocityX = self.move_towards(self.velocityX, 0, self.speed * dt)
-
+            if self.isonfloor == True:
+                self.velocityX = self.move_towards(self.velocityX, 0, self.speed * dt)
+            else:
+                self.velocityX = self.move_towards(self.velocityX, 0, (self.speed / 1.5) * dt)
         # do gravity acceleration or jump
         if not self.velocityY >= self.maxfallspeed:
             self.velocityY += self.gravity * dt
@@ -287,8 +288,8 @@ class nonplayers:
 
         # setup player rect
         self.playeranimations = [
-            pygame.transform.scale(texture["playerstand"], (cellsize, cellsize)),
-            pygame.transform.scale(texture["playerwalk"], (cellsize, cellsize)),
+            pygame.transform.scale(texture["nonplayerstand"], (cellsize, cellsize)),
+            pygame.transform.scale(texture["nonplayerwalk"], (cellsize, cellsize)),
         ]
         self.playerrect = pygame.Rect((x * cellsize, y * cellsize), (10, 10))
 

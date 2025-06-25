@@ -2,6 +2,7 @@ import select
 import mapload  # custom
 import pygame
 import sys
+import os
 import math
 from pygame.locals import QUIT
 
@@ -86,6 +87,8 @@ def save(level):
         
         with open('.\\data\\maps\\' + input('name of current level: '), 'w') as f:
             f.write(newlevel)
+        os.system("python paktool_debug.py")
+        os.system("python ..\\launcher.pyw")
 
 try:
     n = input('loadmap: ')
