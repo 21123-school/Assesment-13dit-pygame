@@ -12,7 +12,7 @@ halfcellsize = cellsize / 2
 
 # camera
 camera = pygame.Rect(0, 0, 0, 0)
-starthp = 300
+starthp = 999
 
 # pygame set up
 pygame.init()
@@ -39,7 +39,7 @@ def loadnewlevel(nextlevelrand="null"):
     level = nextlevel
 
     try:
-        waittime = int(clock.get_fps()) * 2
+        waittime = int(clock.get_fps()) * 1
         for i in range(waittime):
             processes[0]
             pygame.display.update()
@@ -49,7 +49,7 @@ def loadnewlevel(nextlevelrand="null"):
     
     try:
         if message != 'q':
-            waittime = int(clock.get_fps()) * 2
+            waittime = int(clock.get_fps()) * 0
             for i in range(waittime):
                 screen.fill(pygame.Color(11, 11, 11))
                 screen.blit(pygametext(message[1:]),(1, 1, 1, 1))
@@ -191,15 +191,18 @@ class players:
 
         if self.movevector.x != 0 and abs(self.velocityX) < self.maxspeed:
             self.velocityX = self.move_towards(self.velocityX, self.maxspeed * self.direction, self.speed * dt)
+            if abs(self.velocityX) < 2:
+                self.velocityX = self.move_towards(self.velocityX, self.maxspeed * self.direction, (self.speed * dt) * 6)
         else:
             if self.isonfloor == True:
                 self.velocityX = self.move_towards(self.velocityX, 0, self.speed * dt)
             else:
                 self.velocityX = self.move_towards(self.velocityX, 0, (self.speed / 1.5) * dt)
+
         # do gravity acceleration or jump
         if not self.velocityY >= self.maxfallspeed:
             self.velocityY += self.gravity * dt
-        if self.keys[pygame.K_w] and self.isonfloor:
+        if (self.keys[pygame.K_w] or self.keys[pygame.K_SPACE]) and self.isonfloor:
             sound["jump"].play()
             self.velocityY += self.jumphight
 
@@ -390,7 +393,10 @@ class tilemaps:
                 self.tilerect = pygame.Rect(((j * cellsize) + camera.x, (i * cellsize) + camera.y),(cellsize, cellsize))
                 try:
                     if self.currentlevel[i][j] == 4 or self.currentlevel[i][j] == 0 or self.currentlevel[i][j] == 1:
-                        screen.blit(self.textures[self.currentlevel[i - 1][j]], self.tilerect)
+                        if self.currentlevel[i - 1][j] != 2:
+                            screen.blit(self.textures[self.currentlevel[i - 1][j]], self.tilerect)
+                        else:
+                            screen.blit(self.textures[3], self.tilerect)
                         
                     screen.blit(self.textures[self.currentlevel[i][j]], self.tilerect)
                     
@@ -413,7 +419,7 @@ class tilemaps:
 arg = str(sys.argv[1]).split(".")[0]
 # set starting map
 level = ""
-nextlevel = "loader.map"
+nextlevel = "a2m3.map"
 
 loadnewlevel(nextlevel)
 try:
@@ -454,5 +460,8 @@ while True:
 
     # update pygame and get deltatime
     pygame.display.update()
-    dt = clock.tick() / 100
+    if int(clock.get_fps()) > 300:
+        dt = clock.tick(240) / 100
+    else:
+        dt = clock.tick() / 100
     #print(len(processes))
