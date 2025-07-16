@@ -147,7 +147,7 @@ class players:
         for y in range(len(self.tilemap.currentlevel)):
             for x in range(len(self.tilemap.currentlevel[0])):
                 if self.tilemap.currentlevel[y][x] == 0:
-                    self.start = pygame.math.Vector2(x * cellsize, y * cellsize)
+                    self.start = pygame.math.Vector2(x * cellsize, y * cellsize - cellsize)
                     self.playerrect.x = self.start.x
                     self.playerrect.y = self.start.y
                     return
@@ -159,13 +159,14 @@ class players:
         return mfrom + direction * bmuch
 
     def hitbox(self, tile):
-        self.collisions = [pygame.Vector2(self.playerrect.x + 6, self.playerrect.y), pygame.Vector2(self.playerrect.x + 24, self.playerrect.y), pygame.Vector2(self.playerrect.x + 6, self.playerrect.y + 32), pygame.Vector2(self.playerrect.x + 24, self.playerrect.y + 32) ] 
+        self.collisions = [pygame.Vector2(self.playerrect.x + 16, self.playerrect.y), pygame.Vector2(self.playerrect.x + 16, self.playerrect.y + 32), pygame.Vector2(self.playerrect.x + 6, self.playerrect.y + 16), pygame.Vector2(self.playerrect.x + 26, self.playerrect.y + 16) ] 
         self.hits = []
+        #pygame.draw.rect(screen,(255,255,0),(self.playerrect.x + camera.x,self.playerrect.y + camera.y,32,32))
         for i in range(len(self.collisions)):
             #pygame.draw.rect(screen,1,(self.collisions[i].x + camera.x,self.collisions[i].y + camera.y,2,2))
-            self.hit = self.tilemap.global_to_map(self.collisions[i])
-            if self.tilemap.currentlevel[int(self.hit.y)][int(self.hit.x)] == tile:
-                pygame.draw.rect(screen,(255,255,0),(self.collisions[i].x + camera.x,self.collisions[i].y + camera.y,2,2))
+            self.hit = pygame.math.Vector2(self.collisions[i].x / 32, self.collisions[i].y / 32)
+            if self.tilemap.currentlevel[max(0, min(len(self.tilemap.currentlevel) - 1, int(self.hit.y)))][max(0, min(len(self.tilemap.currentlevel[0]) - 1, int(self.hit.x)))] == tile:
+                #pygame.draw.rect(screen,(255,5 * i,0),(self.collisions[i].x + camera.x,self.collisions[i].y + camera.y,2,2))
                 self.hits.append(i)
         print(self.hits, tile)
         return self.hits
@@ -243,15 +244,16 @@ class players:
             self.died()
 
         # checks if off solid tile if yes gravity added if not reset velocityY and check if solid tile it roof if no is on floor true
-        if not self.hitbox(2):
+        if not 1 in self.hitbox(2):
             self.playerrect.y += self.velocityY * dt
         else:
-            if 2 in self.hitbox(2) or 3 in self.hitbox(2):
+            if 0 in self.hitbox(3):
                 self.isonfloor = True
             self.velocityY = 0
+            self.playerrect.y += -1
 
         # checks if moving will put you in wall if not move
-        if not 3 in self.hitbox(2) or not 0 in self.hitbox(2):
+        if not (2 in self.hitbox(2) or 3 in self.hitbox(2)):
             self.playerrect.x += self.velocityX * dt
         else:
             self.playerrect.x -= (self.velocityX * 2) * dt
