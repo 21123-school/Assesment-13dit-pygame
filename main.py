@@ -1,3 +1,5 @@
+import collections
+from pickle import APPEND
 import mapload  # custom
 import pygame
 import sys
@@ -145,7 +147,7 @@ class players:
         for y in range(len(self.tilemap.currentlevel)):
             for x in range(len(self.tilemap.currentlevel[0])):
                 if self.tilemap.currentlevel[y][x] == 0:
-                    self.start = pygame.math.Vector2(x * cellsize, y * cellsize - halfcellsize)
+                    self.start = pygame.math.Vector2(x * cellsize, y * cellsize)
                     self.playerrect.x = self.start.x
                     self.playerrect.y = self.start.y
                     return
@@ -155,6 +157,18 @@ class players:
             return mto
         direction = int(math.copysign(1, mto - mfrom))  # sign function
         return mfrom + direction * bmuch
+
+    def hitbox(self, tile):
+        self.collisions = [pygame.Vector2(self.playerrect.x + 6, self.playerrect.y), pygame.Vector2(self.playerrect.x + 24, self.playerrect.y), pygame.Vector2(self.playerrect.x + 6, self.playerrect.y + 32), pygame.Vector2(self.playerrect.x + 24, self.playerrect.y + 32) ] 
+        self.hits = []
+        for i in range(len(self.collisions)):
+            #pygame.draw.rect(screen,1,(self.collisions[i].x + camera.x,self.collisions[i].y + camera.y,2,2))
+            self.hit = self.tilemap.global_to_map(self.collisions[i])
+            if self.tilemap.currentlevel[int(self.hit.y)][int(self.hit.x)] == tile:
+                pygame.draw.rect(screen,(255,255,0),(self.collisions[i].x + camera.x,self.collisions[i].y + camera.y,2,2))
+                self.hits.append(i)
+        print(self.hits, tile)
+        return self.hits
 
     def died(self):
         sound["hit"].play()
@@ -222,24 +236,25 @@ class players:
         self.tempy.y = min(len(self.tilemap.currentlevel) - 1, self.tempy.y)
         
         # checks if level end reacheds
-        if (self.tilemap.currentlevel[int(self.tilemap.global_to_map(self.playerrect).y)][int(self.tilemap.global_to_map(self.playerrect).x)]== 1):
+        if self.hitbox(1):
             sound["goal"].play()
             loadnewlevel()
-        elif (self.tilemap.currentlevel[int(self.tilemap.global_to_map(self.playerrect).y)][int(self.tilemap.global_to_map(self.playerrect).x)]== 4):
+        elif self.hitbox(4):
             self.died()
 
         # checks if off solid tile if yes gravity added if not reset velocityY and check if solid tile it roof if no is on floor true
-        if self.tilemap.currentlevel[int(self.tempy.y)][int(self.tempy.x)] != 2:
+        if not self.hitbox(2):
             self.playerrect.y += self.velocityY * dt
         else:
-            if self.tilemap.currentlevel[int(self.tilemap.global_to_map(self.playerrect).y)][int(self.tempy.x)]!= 2:
+            if 2 in self.hitbox(2) or 3 in self.hitbox(2):
                 self.isonfloor = True
             self.velocityY = 0
 
         # checks if moving will put you in wall if not move
-        if self.tilemap.currentlevel[int(self.tempx.y)][int(self.tempx.x)] != 2:
+        if not 3 in self.hitbox(2) or not 0 in self.hitbox(2):
             self.playerrect.x += self.velocityX * dt
         else:
+            self.playerrect.x -= (self.velocityX * 2) * dt
             self.velocityX = 0
 
         self.draw()
@@ -419,7 +434,7 @@ class tilemaps:
 arg = str(sys.argv[1]).split(".")[0]
 # set starting map
 level = ""
-nextlevel = "a2m3.map"
+nextlevel = "a1m2.map"
 
 loadnewlevel(nextlevel)
 try:
