@@ -147,7 +147,7 @@ class players:
         for y in range(len(self.tilemap.currentlevel)):
             for x in range(len(self.tilemap.currentlevel[0])):
                 if self.tilemap.currentlevel[y][x] == 0:
-                    self.start = pygame.math.Vector2(x * cellsize, y * cellsize - cellsize)
+                    self.start = pygame.math.Vector2(x * cellsize, y * cellsize)
                     self.playerrect.x = self.start.x
                     self.playerrect.y = self.start.y
                     return
@@ -159,7 +159,7 @@ class players:
         return mfrom + direction * bmuch
 
     def hitbox(self, tile):
-        self.collisions = [pygame.Vector2(self.playerrect.x + 16, self.playerrect.y), pygame.Vector2(self.playerrect.x + 16, self.playerrect.y + 32), pygame.Vector2(self.playerrect.x + 6, self.playerrect.y + 16), pygame.Vector2(self.playerrect.x + 26, self.playerrect.y + 16) ] 
+        self.collisions = [pygame.Vector2(self.playerrect.x + 16, self.playerrect.y), pygame.Vector2(self.playerrect.x + 16, self.playerrect.y + 32), pygame.Vector2(self.playerrect.x + 6, self.playerrect.y + 18), pygame.Vector2(self.playerrect.x + 26, self.playerrect.y + 18) ] 
         self.hits = []
         #pygame.draw.rect(screen,(255,255,0),(self.playerrect.x + camera.x,self.playerrect.y + camera.y,32,32))
         for i in range(len(self.collisions)):
@@ -168,7 +168,7 @@ class players:
             if self.tilemap.currentlevel[max(0, min(len(self.tilemap.currentlevel) - 1, int(self.hit.y)))][max(0, min(len(self.tilemap.currentlevel[0]) - 1, int(self.hit.x)))] == tile:
                 #pygame.draw.rect(screen,(255,5 * i,0),(self.collisions[i].x + camera.x,self.collisions[i].y + camera.y,2,2))
                 self.hits.append(i)
-        print(self.hits, tile)
+        #print(self.hits, tile)
         return self.hits
 
     def died(self):
@@ -219,22 +219,10 @@ class players:
             self.velocityY += self.gravity * dt
         if (self.keys[pygame.K_w] or self.keys[pygame.K_SPACE]) and self.isonfloor:
             sound["jump"].play()
+            self.playerrect.y -= 1 
             self.velocityY += self.jumphight
 
         self.isonfloor = False
-
-        # used for collison math converts global coords to tilemap coords with some modifiers
-        self.tempx = self.tilemap.global_to_map(pygame.math.Vector2(self.playerrect.x + (13 * math.copysign(1, self.velocityX)),self.playerrect.y + 14,))
-        self.tempy = self.tilemap.global_to_map(pygame.math.Vector2(self.playerrect.x,self.playerrect.y + (self.velocityY * dt) + halfcellsize,))
-
-        self.tempx.x = max(0, self.tempx.x)
-        self.tempx.x = min(len(self.tilemap.currentlevel[0]) - 1, self.tempx.x)
-        self.tempx.y = max(0, self.tempx.y)
-        self.tempx.y = min(len(self.tilemap.currentlevel) - 1, self.tempx.y)
-        self.tempy.x = max(0, self.tempy.x)
-        self.tempy.x = min(len(self.tilemap.currentlevel[0]) - 1, self.tempy.x)
-        self.tempy.y = max(0, self.tempy.y)
-        self.tempy.y = min(len(self.tilemap.currentlevel) - 1, self.tempy.y)
         
         # checks if level end reacheds
         if self.hitbox(1):
@@ -244,19 +232,21 @@ class players:
             self.died()
 
         # checks if off solid tile if yes gravity added if not reset velocityY and check if solid tile it roof if no is on floor true
-        if not 1 in self.hitbox(2):
+        if not (1 in self.hitbox(2) or 0 in self.hitbox(2)):
             self.playerrect.y += self.velocityY * dt
         else:
-            if 0 in self.hitbox(3):
+            if not 0 in self.hitbox(2):
                 self.isonfloor = True
+            else:
+                self.playerrect.y += 1
             self.velocityY = 0
-            self.playerrect.y += -1
+            #self.playerrect.y += int(int(1 in self.hitbox(3)) - int(0 in self.hitbox(3)))
 
         # checks if moving will put you in wall if not move
         if not (2 in self.hitbox(2) or 3 in self.hitbox(2)):
             self.playerrect.x += self.velocityX * dt
         else:
-            self.playerrect.x -= (self.velocityX * 2) * dt
+            self.playerrect.x += int(int(2 in self.hitbox(2)) - int(3 in self.hitbox(2)))
             self.velocityX = 0
 
         self.draw()
@@ -436,7 +426,7 @@ class tilemaps:
 arg = str(sys.argv[1]).split(".")[0]
 # set starting map
 level = ""
-nextlevel = "a1m2.map"
+nextlevel = "a2m2.map"
 
 loadnewlevel(nextlevel)
 try:
@@ -465,12 +455,12 @@ while True:
             pygame.quit()
             sys.exit()
 
-    '''      
+    """
     if int(clock.get_fps()) > 20:
         for _ in range(20):
             nonplayer = [nonplayers(tilemap, 3, 3)]
             processes.append(nonplayer[-1].playermove)
-    '''  
+    """
 
     # displays fps on title bar
     pygame.display.set_caption("FPS: " + str(int(clock.get_fps())))
