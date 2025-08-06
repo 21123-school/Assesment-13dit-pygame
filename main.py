@@ -36,8 +36,7 @@ def pygametext(txt):
 
 #****************************************************
 
-def loadnewlevel(nextlevelrand="null"):
-    global nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message
+def loadnewlevel(nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message, nextlevelrand="null"):
     level = nextlevel
 
     try:
@@ -105,6 +104,8 @@ def loadnewlevel(nextlevelrand="null"):
     for i in range(len(tempspawn)):
         nonplayer.append(nonplayers(tilemap, int(tempspawn[i][0]), int(tempspawn[i][1])))
         processes.append(nonplayer[-1].playermove)
+
+    return nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message
 
 #****************************************************
 
@@ -422,13 +423,23 @@ class tilemaps:
 #****************************************************
 #****************************************************
 
+newmap = 0
+camera = 0
+tilemap = 0
+player = 0
+processes = []
+sound = 0
+texture = 0
+nonplayer = 0
+message = 0 
+
 # find used *.pak
 arg = str(sys.argv[1]).split(".")[0]
 # set starting map
 level = ""
 nextlevel = "a2m2.map"
 
-loadnewlevel(nextlevel)
+nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message = loadnewlevel(nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message, nextlevel)
 try:
     loadsav()
 except:
