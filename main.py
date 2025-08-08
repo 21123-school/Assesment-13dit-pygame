@@ -36,7 +36,8 @@ def pygametext(txt):
 
 #****************************************************
 
-def loadnewlevel(nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message, nextlevelrand="null"):
+def loadnewlevel(nextlevelrand="null"):
+    global nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message
     level = nextlevel
 
     try:
@@ -137,11 +138,15 @@ class players:
         self.jumphight = -75
         self.speed = 15
 
-        # setup player rect
-        self.playeranimations = [
-            pygame.transform.scale(texture["playerstand"], (cellsize, cellsize)),
-            pygame.transform.scale(texture["playerwalk"], (cellsize, cellsize)),
-        ]
+        try:
+            # setup player rect
+            self.playeranimations = [
+                pygame.transform.scale(texture["playerstand"], (cellsize, cellsize)),
+                pygame.transform.scale(texture["playerwalk"], (cellsize, cellsize)),
+            ]
+        except:
+            pass
+
         self.playerrect = pygame.Rect((len(self.tilemap.currentlevel[0]) * halfcellsize - halfcellsize,len(self.tilemap.currentlevel) * halfcellsize - halfcellsize, ),(10, 10))
 
         # find map start tile if available
@@ -297,11 +302,14 @@ class nonplayers:
         self.maxspeed = 20
         self.speed = self.maxspeed
 
-        # setup player rect
-        self.playeranimations = [
-            pygame.transform.scale(texture["nonplayerstand"], (cellsize, cellsize)),
-            pygame.transform.scale(texture["nonplayerwalk"], (cellsize, cellsize)),
-        ]
+        try:
+            # setup player rect
+            self.playeranimations = [
+                pygame.transform.scale(texture["nonplayerstand"], (cellsize, cellsize)),
+                pygame.transform.scale(texture["nonplayerwalk"], (cellsize, cellsize)),
+            ]
+        except:
+            pass
         self.playerrect = pygame.Rect((x * cellsize, y * cellsize), (10, 10))
 
     def move_towards(self, mfrom, mto, bmuch):
@@ -423,23 +431,14 @@ class tilemaps:
 #****************************************************
 #****************************************************
 
-newmap = 0
-camera = 0
-tilemap = 0
-player = 0
-processes = []
-sound = 0
-texture = 0
-nonplayer = 0
-message = 0 
-
 # find used *.pak
 arg = str(sys.argv[1]).split(".")[0]
 # set starting map
 level = ""
-nextlevel = "a2m2.map"
+nextlevel = "a1m1.map"
 
-nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message = loadnewlevel(nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message, nextlevel)
+loadnewlevel(nextlevel)
+
 try:
     loadsav()
 except:
