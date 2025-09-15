@@ -1,5 +1,3 @@
-import collections
-from pickle import APPEND
 import mapload  # custom
 import pygame
 import sys
@@ -36,13 +34,12 @@ def pygametext(txt):
 
 #****************************************************
 
-def loadnewlevel(nextlevel,nextlevelrand="null",starthp=3):
+def loadnewlevel(nextlevel,nextlevelrand="null",starthp=3,message='q'):
     level = nextlevel
 
     try:
         waittime = int(clock.get_fps()) * 1
         for i in range(waittime):
-            processes[0]
             pygame.display.update()
             clock.tick(waittime/2)
     except:
@@ -50,7 +47,7 @@ def loadnewlevel(nextlevel,nextlevelrand="null",starthp=3):
     
     try:
         if message != 'q':
-            waittime = int(clock.get_fps()) * 0
+            waittime = int(clock.get_fps()) * 2
             for i in range(waittime):
                 screen.fill(pygame.Color(11, 11, 11))
                 screen.blit(pygametext(message[1:]),(1, 1, 1, 1))
@@ -105,14 +102,6 @@ def loadnewlevel(nextlevel,nextlevelrand="null",starthp=3):
         nonplayer.append(nonplayers(texture, tilemap, int(tempspawn[i][0]), int(tempspawn[i][1])))
         processes.append(nonplayer[-1].playermove)
 
-    return nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message
-
-#****************************************************
-
-def loadsav(nextlevel):
-    nextlevel, starthp = mapload.buildsav(sys.argv[2])
-    player.hp = starthp
-    nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message = loadnewlevel(nextlevel,starthp)
     return nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message
 
 #classes
@@ -463,10 +452,10 @@ while True:
 
     if player.hitbox(1):
         sound["goal"].play()
-        nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message = loadnewlevel(nextlevel)
+        nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message = loadnewlevel(nextlevel,'null',3,message)
     if player.hp < 1:
         player.hp = 3
-        nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message = loadnewlevel(nextlevel,"a1m1.map")
+        nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message = loadnewlevel(nextlevel,"a1m1.map",3,message)
 
     """
     if int(clock.get_fps()) > 20:
