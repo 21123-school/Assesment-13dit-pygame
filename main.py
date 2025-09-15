@@ -14,7 +14,7 @@ halfcellsize = cellsize / 2
 
 # camera
 camera = pygame.Rect(0, 0, 0, 0)
-starthp = 999
+starthp = 2
 
 # pygame set up
 pygame.init()
@@ -36,8 +36,7 @@ def pygametext(txt):
 
 #****************************************************
 
-def loadnewlevel(nextlevelrand="null"):
-    global nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message
+def loadnewlevel(nextlevel,nextlevelrand="null",starthp=3):
     level = nextlevel
 
     try:
@@ -88,12 +87,12 @@ def loadnewlevel(nextlevelrand="null"):
     else:
         newmap, nextlevel, message = mapload.buildmap(mapload.loadpaktext(sys.argv[1], f"{arg}/maps/{nextlevelrand}"))
 
-    tilemap = tilemaps(newmap)
+    tilemap = tilemaps(texture,newmap)
 
     try:
-        player = players(tilemap, player.hp)
+        player = players(texture,sound ,tilemap, player.hp)
     except:
-        player = players(tilemap, starthp)
+        player = players(texture,sound ,tilemap, starthp)
 
     processes = [tilemap.drawlevel, player.playermove]
 
@@ -103,25 +102,27 @@ def loadnewlevel(nextlevelrand="null"):
             if tilemap.currentlevel[y][x] == 5:
                 tempspawn.append([x, y])
     for i in range(len(tempspawn)):
-        nonplayer.append(nonplayers(tilemap, int(tempspawn[i][0]), int(tempspawn[i][1])))
+        nonplayer.append(nonplayers(texture, tilemap, int(tempspawn[i][0]), int(tempspawn[i][1])))
         processes.append(nonplayer[-1].playermove)
 
     return nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message
 
 #****************************************************
 
-def loadsav():
+def loadsav(nextlevel):
     nextlevel, starthp = mapload.buildsav(sys.argv[2])
     player.hp = starthp
-    loadnewlevel(nextlevel)
+    nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message = loadnewlevel(nextlevel,starthp)
+    return nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message
 
 #classes
 #****************************************************
 #****************************************************
 
 class players:
-    def __init__(self, tilemap, hp=3):
+    def __init__(self, texture, sound, tilemap, hp=3):
         # vars set up
+        self.sound = sound
         self.hp = hp
         self.isonfloor = False
         self.velocityY = 0
@@ -178,17 +179,12 @@ class players:
         return self.hits
 
     def died(self):
-        sound["hit"].play()
+        self.sound["hit"].play()
         self.playerrect.x = self.start.x
         self.playerrect.y = self.start.y
         self.hp -= 1
 
     def playermove(self):
-        # checks if dead
-        if self.hp < 1:
-            self.hp = 3
-            loadnewlevel("a1m1.map")
-
         # sets animation to run 8 times a second i hope
         self.animationdelay = int(clock.get_fps()) / 8
         self.keys = pygame.key.get_pressed()
@@ -224,17 +220,14 @@ class players:
         if not self.velocityY >= self.maxfallspeed:
             self.velocityY += self.gravity * dt
         if (self.keys[pygame.K_w] or self.keys[pygame.K_SPACE]) and self.isonfloor:
-            sound["jump"].play()
+            self.sound["jump"].play()
             self.playerrect.y -= 1 
             self.velocityY += self.jumphight
 
         self.isonfloor = False
         
         # checks if level end reacheds
-        if self.hitbox(1):
-            sound["goal"].play()
-            loadnewlevel()
-        elif self.hitbox(4):
+        if self.hitbox(4):
             self.died()
 
         # checks if off solid tile if yes gravity added if not reset velocityY and check if solid tile it roof if no is on floor true
@@ -273,7 +266,7 @@ class players:
             if self.currentanimationdelay >= self.animationdelay:
                 self.animation = not self.animation
                 self.currentanimationdelay = 0
-                sound["walk"].play()
+                self.sound["walk"].play()
             else:
                 self.currentanimationdelay += 1
         else:
@@ -286,8 +279,9 @@ class players:
 #****************************************************
 
 class nonplayers:
-    def __init__(self, tilemap, x, y, hp=3):
+    def __init__(self, texture,tilemap, x, y, hp=3):
         # vars set up
+        self.texture = texture
         self.hp = hp
         self.isonfloor = False
         self.velocityY = 0
@@ -391,7 +385,7 @@ class nonplayers:
 #****************************************************
 
 class tilemaps:
-    def __init__(self, map):
+    def __init__(self, texture, map):
         # get local verson of textures
         self.currentlevel = map
         self.textures = list(texture.values())
@@ -437,10 +431,12 @@ arg = str(sys.argv[1]).split(".")[0]
 level = ""
 nextlevel = "a1m1.map"
 
-loadnewlevel(nextlevel)
+nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message = loadnewlevel(nextlevel, nextlevel)
 
 try:
-    loadsav()
+    nextlevel, starthp = mapload.buildsav(sys.argv[2])
+    player.hp = starthp
+    nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message = loadnewlevel(nextlevel,'null',starthp)
 except:
     pass
 
@@ -464,6 +460,13 @@ while True:
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
+
+    if player.hitbox(1):
+        sound["goal"].play()
+        nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message = loadnewlevel(nextlevel)
+    if player.hp < 1:
+        player.hp = 3
+        nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message = loadnewlevel(nextlevel,"a1m1.map")
 
     """
     if int(clock.get_fps()) > 20:
