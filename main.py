@@ -2,6 +2,7 @@ import mapload  # custom
 import pygame
 import sys
 import math
+import socket
 from pygame.locals import QUIT
 
 # basic math definitions
@@ -36,26 +37,7 @@ def pygametext(txt):
 
 def loadnewlevel(nextlevel,nextlevelrand="null",starthp=3,message='q'):
     level = nextlevel
-
-    try:
-        waittime = int(clock.get_fps()) * 1
-        for i in range(waittime):
-            pygame.display.update()
-            clock.tick(waittime/2)
-    except:
-        pass
     
-    try:
-        if message != 'q':
-            waittime = int(clock.get_fps()) * 2
-            for i in range(waittime):
-                screen.fill(pygame.Color(11, 11, 11))
-                screen.blit(pygametext(message[1:]),(1, 1, 1, 1))
-                pygame.display.update()
-                clock.tick(waittime/2)
-    except:
-        pass
-
     nonplayer = []
 
     # puts all sounds of type *.wav into a dictionary
@@ -204,7 +186,7 @@ class players:
                 self.velocityX = self.move_towards(self.velocityX, 0, self.speed * dt)
             else:
                 self.velocityX = self.move_towards(self.velocityX, 0, (self.speed / 1.5) * dt)
-
+        
         # do gravity acceleration or jump
         if not self.velocityY >= self.maxfallspeed:
             self.velocityY += self.gravity * dt
@@ -218,13 +200,15 @@ class players:
         # checks if level end reacheds
         if self.hitbox(4):
             self.died()
-
         # checks if off solid tile if yes gravity added if not reset velocityY and check if solid tile it roof if no is on floor true
         if not (1 in self.hitbox(2) or 0 in self.hitbox(2)):
             self.playerrect.y += self.velocityY * dt
         else:
             if not 0 in self.hitbox(2):
                 self.isonfloor = True
+                while 1 in self.hitbox(2):
+                    self.playerrect.y += -1
+                self.playerrect.y += 1
             else:
                 self.playerrect.y += 1
             self.velocityY = 0
@@ -422,13 +406,20 @@ nextlevel = "a1m1.map"
 
 nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message = loadnewlevel(nextlevel, nextlevel)
 
-try:
-    nextlevel, starthp = mapload.buildsav(sys.argv[2])
-    player.hp = starthp
-    nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message = loadnewlevel(nextlevel,'null',starthp)
-except:
-    pass
+levelnum = 1
 
+host = sys.argv[2]
+port = 49152
+client_socket = socket.socket()
+client_socket.connect((host, port))
+client_id = client_socket.recv(1024)
+clientdatalist = {}
+clientanimations = [pygame.transform.scale(texture["playerstand"], (cellsize, cellsize)), pygame.transform.scale(texture["playerwalk"], (cellsize, cellsize))]
+clientanimation = True
+clientcurrentanimationdelay = 0
+clientanimationdelay = 60
+clientname = sys.argv[3]
+    
 while True:
     # center camera
     camera.x = 0 - player.playerrect.x + (aspect[0] * cellsize) - cellsize
@@ -441,36 +432,70 @@ while True:
         process()
 
     # x/y coords
-    screen.blit(pygametext("X: "+ str(tilemap.global_to_map(player.playerrect).x)+ " Y: "+ str(tilemap.global_to_map(player.playerrect).y)),(1, 1, 1, 1))
+    #screen.blit(pygametext("X: "+ str(tilemap.global_to_map(player.playerrect).x)+ " Y: "+ str(tilemap.global_to_map(player.playerrect).y)),(1, 1, 1, 1))
+    screen.blit(pygametext("X: "+ str(player.playerrect.x) + " Y: "+ str(player.playerrect.y)),(1, 1, 1, 1))
     screen.blit(pygametext("Hp: " + str(player.hp)),((aspect[0] * (cellsize * 2)) - 60, 1, 1, 1))
 
     # idk what this does but if i remove it pygame crashes
     for event in pygame.event.get():
         if event.type == QUIT:
+            client_socket.send(b'\xef')
             pygame.quit()
             sys.exit()
 
     if player.hitbox(1):
         sound["goal"].play()
         nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message = loadnewlevel(nextlevel,'null',3,message)
+        levelnum += 1
     if player.hp < 1:
         player.hp = 3
         nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message = loadnewlevel(nextlevel,"a1m1.map",3,message)
-
-    """
-    if int(clock.get_fps()) > 20:
-        for _ in range(20):
-            nonplayer = [nonplayers(tilemap, 3, 3)]
-            processes.append(nonplayer[-1].playermove)
-    """
-
+        levelnum = 1
+		
+    #------------------
+    clientanimationdelay = int(clock.get_fps())
+    try:
+        message = client_id + player.playerrect.x.to_bytes(2, 'little') + player.playerrect.y.to_bytes(2, 'little') + int(player.direction + 1).to_bytes(1, 'little') + int(player.movevector.x == 0).to_bytes(1, 'little') + levelnum.to_bytes(1, 'little') + clientname.encode("utf-8")
+    except:
+        message = client_id + player.playerrect.x.to_bytes(2, 'little') + player.playerrect.y.to_bytes(2, 'little') + int(player.direction + 1).to_bytes(1, 'little') + int(0).to_bytes(1, 'little') + levelnum.to_bytes(1, 'little') + clientname.encode("utf-8")
+    
+    client_socket.send(message)
+	
+    data = client_socket.recv(1024)
+    if data:
+        data = data.split(b'\xff')
+        for client in data:
+            client_data = list(client)
+            if client:
+                try:
+                    clientdatalist[client_data[0]] = {'x': client_data[1].to_bytes(1, 'little') + client_data[2].to_bytes(1, 'little'), 'y': client_data[3].to_bytes(1, 'little') + client_data[4].to_bytes(1, 'little'), 'd': client_data[5] - 1, 'm': client_data[6], 'l': client_data[7]}
+                    clientdatalist[client_data[0]]['n'] = chr(client_data[8]) + chr(client_data[9]) + chr(client_data[10])
+                except:
+                    print('Packet malformed: ignoring')
+            if clientcurrentanimationdelay >= clientanimationdelay:
+                clientcurrentanimationdelay = 0
+                clientanimation = not clientanimation 
+            else:
+                clientcurrentanimationdelay += 1      
+    for c in clientdatalist.keys():
+        if c.to_bytes(1, 'little') != client_id and clientdatalist[c]['l'] == levelnum:
+            screen.blit(pygametext(clientdatalist[c]['n']), (int.from_bytes(clientdatalist[c]['x'], "little") + camera.x, int.from_bytes(clientdatalist[c]['y'], "little") - 20 + camera.y))
+            if not clientdatalist[c]['m']:
+                if clientdatalist[c]['d'] < 0:
+                    screen.blit(pygame.transform.flip(clientanimations[clientanimation], True, False), (int.from_bytes(clientdatalist[c]['x'], "little") + camera.x, int.from_bytes(clientdatalist[c]['y'], "little") + camera.y))
+                else:
+                    screen.blit(clientanimations[clientanimation], (int.from_bytes(clientdatalist[c]['x'], "little") + camera.x, int.from_bytes(clientdatalist[c]['y'], "little") + camera.y))
+            else:
+                if clientdatalist[c]['d'] < 0:
+                    screen.blit(pygame.transform.flip(clientanimations[0], True, False), (int.from_bytes(clientdatalist[c]['x'], "little") + camera.x, int.from_bytes(clientdatalist[c]['y'], "little") + camera.y))
+                else:
+                    screen.blit(clientanimations[0], (int.from_bytes(clientdatalist[c]['x'], "little") + camera.x, int.from_bytes(clientdatalist[c]['y'], "little") + camera.y))
+    #------------------
+	
     # displays fps on title bar
     pygame.display.set_caption("FPS: " + str(int(clock.get_fps())))
 
     # update pygame and get deltatime
     pygame.display.update()
-    if int(clock.get_fps()) > 300:
-        dt = clock.tick(240) / 100
-    else:
-        dt = clock.tick() / 100
+    dt = clock.tick(60) / 100
     #print(len(processes))
