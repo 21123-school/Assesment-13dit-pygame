@@ -39,8 +39,8 @@ def start_game():
     pak = selected_file_pak.get()
     sav = file_dropdown_sav.get()
     nam = file_dropdown_nam.get()
-    for i in range(5):
-        subprocess.Popen([sys.executable, "main.py", pak, sav, nam])
+    #for i in range(5):
+    subprocess.Popen([sys.executable, "main.py", pak, sav, nam[:3]])
 
 ttk.Button(frm, text="Start", command=start_game).grid(column=0, row=5, pady=(0, 15))
 

@@ -3,19 +3,22 @@ Data Types:
 		0 to 255 : 0x00 to 0xff
 		
 	Int:
-		0 to 65535 : 0x00 0x00 to 0xff 0xff
+		0 to 65535 : 0000 to ffff
 		
 	Boolean:
 		True or False : 0x00 or 0x01
 
+	Char:
+		0 to 255 : 0x00 to 0xff
+
 Protocol:
 	Client To Server:
 		Client Update:
-			[PLAYER_ID = Byte, PLAYER_X = Int, PLAYER_Y = Int]
+			[PLAYER_ID = Byte, PLAYER_X = Int, PLAYER_Y = Int, CHAR1 = Char, CHAR2 = Char, CHAR3 = Char]
 
 	Server To Client:
 		Assign New Client ID:
 			[NEW_PLAYER_ID = Byte]
 
 		Update Clients:
-			[PLAYER_ID = Byte, PLAYER_X = Int, PLAYER_Y = Int, PLAYER_DIRECTION = Byte, PLAYER_MOVING = Boolean, PLAYER_LEVEL = Byte, 0xff = byte, ...]
+			[PLAYER_ID = Byte, PLAYER_X = Int, PLAYER_Y = Int, PLAYER_DIRECTION = Byte, PLAYER_MOVING = Boolean, PLAYER_LEVEL = Byte, CHAR1 = Char, CHAR2 = Char, CHAR3 = Char, 0xff = byte, ...]
