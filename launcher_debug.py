@@ -44,57 +44,59 @@ if files:
 #file_dropdown_sav = ttk.Combobox(frm, textvariable=selected_file_sav, values=files2, state="readonly", width=30)
 #file_dropdown_sav.grid(column=1, row=2, padx=5, pady=5)
 
-ttk.Label(frm, text="HOST IP: ").grid(column=0, row=3, pady=(0, 15))
-file_dropdown_sav = ttk.Entry(frm)
-file_dropdown_sav.grid(column=1, row=3, pady=(0, 15))
+ttk.Label(frm, text="MULTIPLAYER:").grid(column=0, row=3, pady=(0, 5))
 
-ttk.Label(frm, text="USERNAME: ").grid(column=0, row=4, pady=(0, 15))
+ttk.Label(frm, text="HOST IP: ").grid(column=0, row=4, pady=(0, 5))
+file_dropdown_sav = ttk.Entry(frm)
+file_dropdown_sav.grid(column=1, row=4, pady=(0, 5))
+
+ttk.Label(frm, text="USERNAME: ").grid(column=0, row=5, pady=(0, 5))
 file_dropdown_nam = ttk.Entry(frm)
-file_dropdown_nam.grid(column=1, row=4, pady=(0, 15))
+file_dropdown_nam.grid(column=1, row=5, pady=(0, 5))
 
 # Start button
 # Start button
 def start_game_S():
     pak = selected_file_pak.get()
     sav = file_dropdown_sav.get()
+    nam = file_dropdown_nam.get()
     if not sav:
         sav = "localhost"
-    nam = file_dropdown_nam.get()
     if not nam:
-        nam = "   "
+        nam = "tes"
     #for i in range(5):
-    os.system("server.py")
+    subprocess.Popen([sys.executable, "server.py"])
     subprocess.Popen([sys.executable, "main.py", pak, sav, nam[:3]])
     
 def start_game_M():
     pak = selected_file_pak.get()
     sav = file_dropdown_sav.get()
+    nam = file_dropdown_nam.get()
     if not sav:
         sav = "localhost"
-    nam = file_dropdown_nam.get()
     if not nam:
-        nam = "   "
+        nam = "tes"
     #for i in range(5):
     subprocess.Popen([sys.executable, "main.py", pak, sav, nam[:3]])
 
 def start_game_G():
-    os.system("server.py")
+    subprocess.Popen([sys.executable, "server.py"])
 
 ttk.Button(frm, text="SINGLE PLAYER", command=start_game_S).grid(
-    column=0, row=5, columnspan=2, pady=(0, 15)
+    column=0, row=7, columnspan=2, pady=(25, 15)
 )
 
 ttk.Button(frm, text="JOIN MULTIPLAYER", command=start_game_M).grid(
-    column=0, row=6, columnspan=3, pady=(0, 15)
+    column=0, row=8, columnspan=3, pady=(0, 15)
 )
 
 ttk.Button(frm, text="START SERVER", command=start_game_G).grid(
-    column=0, row=7, columnspan=2, pady=(0, 15)
+    column=0, row=9, columnspan=2, pady=(0, 15)
 )
 
 # Quit button
 ttk.Button(frm, text="QUIT", command=root.destroy).grid(
-    column=0, row=8, columnspan=4, pady=(0, 15)
+    column=0, row=10, columnspan=4, pady=(0, 15)
 )
 
 # Center window

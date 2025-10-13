@@ -18,4 +18,4 @@ except:
 with zipfile.ZipFile(f'..\{name}.pak', 'w', zipfile.ZIP_DEFLATED) as zipf:
     zipdir(f'{name}/', zipf)
     print('new file created..')
-#input('press enter to close..')
+input('press enter to close..')
