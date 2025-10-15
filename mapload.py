@@ -3,8 +3,9 @@ from io import BytesIO
 import os
 import random
 
-scramble = {'g':0,'f':1,'t':2,'s':3,'e':4,'m':8,'b':5}
+scramble = {'g': 0, 'f': 1, 't': 2, 's': 3, 'e': 4, 'm': 8, 'b': 5}
 randomfilename = str(random.randint(100, 999)) + '.sav'
+
 
 def buildmap(map):
         temp = []
@@ -29,24 +30,27 @@ def buildmap(map):
         while map[i] != 'q':
                 nextlevel = nextlevel + str(map[i])
                 i += 1
-        for i in range(i,len(map)):
+        for i in range(i, len(map)):
                 message = message + str(map[i])
 
-        return newmap , nextlevel , message
+        return newmap, nextlevel, message
 
-def loadpakitem(pak,filename):
+
+def loadpakitem(pak, filename):
         with ZipFile(pak, 'r') as pakref:
                 with pakref.open(filename, 'r') as file:
                         read = file.read()
                         content = BytesIO(read)
                 return content
 
-def loadpaktext(pak,filename):
+
+def loadpaktext(pak, filename):
         with ZipFile(pak, 'r') as pakref:
                 with pakref.open(filename, 'r') as file:
                         read = file.read()
                         content = read.decode('utf-8')
                 return content
+
 
 def buildsav(filename):
         with open('SAVES\\' + filename) as f:
@@ -54,7 +58,8 @@ def buildsav(filename):
                 temp = text.split('x')
                 return temp[0], int(temp[1])
 
-def savefile(filename,levelname,hp):
+
+def savefile(filename, levelname, hp):
         if filename == '':
                 filename = randomfilename
         if not os.path.exists("SAVES"):

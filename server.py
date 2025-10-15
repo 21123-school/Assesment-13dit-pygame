@@ -35,8 +35,8 @@ def handle(client_socket, address, cid, client_list, running):
         elif client_data:
             client_data = list(client_data)
             client_list[client_data[0].to_bytes(1, 'little')] = {'x': client_data[1].to_bytes(1, 'little') + client_data[2].to_bytes(1, 'little')}
-            client_list[client_data[0].to_bytes(1, 'little')] = client_list[client_data[0].to_bytes(1, 'little')] + {'y': client_data[3].to_bytes(1, 'little') + client_data[4].to_bytes(1, 'little')}
-            client_list[client_data[0].to_bytes(1, 'little')] = client_list[client_data[0].to_bytes(1, 'little')] + {'d':client_data[5].to_bytes(1, 'little'),'m':client_data[6].to_bytes(1, 'little'),'l':client_data[7].to_bytes(1, 'little')}
+            client_list[client_data[0].to_bytes(1, 'little')] = client_list[client_data[0].to_bytes(1, 'little')] | {'y': client_data[3].to_bytes(1, 'little') + client_data[4].to_bytes(1, 'little')}
+            client_list[client_data[0].to_bytes(1, 'little')] = client_list[client_data[0].to_bytes(1, 'little')] | {'d': client_data[5].to_bytes(1, 'little'), 'm': client_data[6].to_bytes(1, 'little'), 'l': client_data[7].to_bytes(1, 'little')}
             client_list[client_data[0].to_bytes(1, 'little')]['n'] = chr(client_data[8]) + chr(client_data[9]) + chr(client_data[10])
             data = b''
             for client in findclients(client_list[cid]['l'], client_list):
