@@ -18,13 +18,14 @@ starthp = 2
 # pygame set up
 pygame.init()
 
-screen = pygame.display.set_mode(((aspect[0] * size) * cellsize,  (aspect[1] * size) * cellsize))
+screen = pygame.display.set_mode(
+        ((aspect[0] * size) * cellsize, (aspect[1] * size) * cellsize)
+    )
 
 clock = pygame.time.Clock()
 fps = 120
 dt = 1
 
-# functions
 
 def pygametext(txt):
     # sets up text for display
@@ -34,7 +35,7 @@ def pygametext(txt):
 
 def loadnewlevel(nextlevel, nextlevelrand="null", starthp=3, message='q'):
     level = nextlevel
-    
+
     nonplayer = []
 
     # puts all sounds of type *.wav into a dictionary
@@ -57,17 +58,20 @@ def loadnewlevel(nextlevel, nextlevelrand="null", starthp=3, message='q'):
                 mapload.loadpakitem(sys.argv[1],  i)
             )
 
-    # resets processes loop remakes the tilemap,  and player objects and gets name of next level
     if nextlevelrand == "null":
-        newmap,  nextlevel,  message = mapload.buildmap(mapload.loadpaktext(sys.argv[1],  f"{arg}/maps/{nextlevel}"))
+        newmap, nextlevel, message = mapload.buildmap(
+                mapload.loadpaktext(sys.argv[1], f"{arg}/maps/{nextlevel}")
+            )
     else:
-        newmap,  nextlevel,  message = mapload.buildmap(mapload.loadpaktext(sys.argv[1],  f"{arg}/maps/{nextlevelrand}"))
+        newmap, nextlevel, message = mapload.buildmap(
+                mapload.loadpaktext(sys.argv[1], f"{arg}/maps/{nextlevelrand}")
+            )
 
     tilemap = tilemaps(texture, newmap)
 
     try:
         player = players(texture, sound, tilemap,  player.hp)
-    except:
+    except Exception as e:
         player = players(texture, sound, tilemap,  starthp)
 
     processes = [tilemap.drawlevel,  player.playermove]
@@ -83,7 +87,6 @@ def loadnewlevel(nextlevel, nextlevelrand="null", starthp=3, message='q'):
 
     return nextlevel,  newmap,  camera,  tilemap,  player,  processes,  sound,  texture,  level,  nonplayer,  message
 
-# classes
 
 class players:
     def __init__(self,  texture,  sound,  tilemap,  hp=3):
@@ -108,13 +111,16 @@ class players:
         try:
             # setup player rect
             self.playeranimations = [
-                pygame.transform.scale(texture["playerstand"],  (cellsize,  cellsize)), 
-                pygame.transform.scale(texture["playerwalk"],  (cellsize,  cellsize)), 
+                pygame.transform.scale(texture["playerstand"],  (cellsize,  cellsize)),
+                pygame.transform.scale(texture["playerwalk"],  (cellsize,  cellsize)),
             ]
-        except:
+        except Exception as e:
             pass
 
-        self.playerrect = pygame.Rect((len(self.tilemap.currentlevel[0]) * halfcellsize - halfcellsize, len(self.tilemap.currentlevel) * halfcellsize - halfcellsize,  ), (10,  10))
+        self.playerrect = pygame.Rect(
+                (len(self.tilemap.currentlevel[0]) * halfcellsize - halfcellsize, len(self.tilemap.currentlevel) * halfcellsize - halfcellsize,),
+                (10,  10)
+            )
 
         # find map start tile if available
         for y in range(len(self.tilemap.currentlevel)):
@@ -132,11 +138,18 @@ class players:
         return mfrom + direction * bmuch
 
     def hitbox(self,  tile):
-        self.collisions = [pygame.Vector2(self.playerrect.x + 16,  self.playerrect.y),  pygame.Vector2(self.playerrect.x + 16,  self.playerrect.y + 32),  pygame.Vector2(self.playerrect.x + 6,  self.playerrect.y + 18),  pygame.Vector2(self.playerrect.x + 26,  self.playerrect.y + 18) ] 
+        self.collisions = [
+                pygame.Vector2(self.playerrect.x + 16,  self.playerrect.y),
+                pygame.Vector2(self.playerrect.x + 16,  self.playerrect.y + 32),
+                pygame.Vector2(self.playerrect.x + 6,  self.playerrect.y + 18),
+                pygame.Vector2(self.playerrect.x + 26,  self.playerrect.y + 18)
+            ]
         self.hits = []
         for i in range(len(self.collisions)):
             self.hit = pygame.math.Vector2(self.collisions[i].x / 32,  self.collisions[i].y / 32)
-            if self.tilemap.currentlevel[max(0,  min(len(self.tilemap.currentlevel) - 1,  int(self.hit.y)))][max(0,  min(len(self.tilemap.currentlevel[0]) - 1,  int(self.hit.x)))] == tile:
+            tv1 = max(0,  min(len(self.tilemap.currentlevel) - 1,  int(self.hit.y)))
+            tv2 = max(0,  min(len(self.tilemap.currentlevel[0]) - 1,  int(self.hit.x)))
+            if self.tilemap.currentlevel[tv1][tv2] == tile:
                 self.hits.append(i)
         return self.hits
 
@@ -154,42 +167,45 @@ class players:
         if self.keys[pygame.K_0]:
             try:
                 mapload.savefile(sys.argv[2],  level,  self.hp)
-            except:
+            except Exception as e:
                 mapload.savefile("",  level,  self.hp)
 
         # used for converting the bools from keys[pygame.K_*]] into movement speed
         self.BoolToInt = {True: 0,  False: self.speed}
         # gets wasd into a vector
-        self.movevector = pygame.math.Vector2((self.BoolToInt[self.keys[pygame.K_a]] + 0 - self.BoolToInt[self.keys[pygame.K_d]]), (self.BoolToInt[self.keys[pygame.K_w]] + 0 - self.BoolToInt[self.keys[pygame.K_s]]), )
+        self.movevector = pygame.math.Vector2(
+                (self.BoolToInt[self.keys[pygame.K_a]] + 0 - self.BoolToInt[self.keys[pygame.K_d]]),
+                (self.BoolToInt[self.keys[pygame.K_w]] + 0 - self.BoolToInt[self.keys[pygame.K_s]])
+            )
 
         if self.movevector.x != 0 and abs(self.velocityX) < self.maxspeed:
-            self.velocityX = self.move_towards(self.velocityX,  self.maxspeed * self.direction,  self.speed * dt)
+            self.velocityX = self.move_towards(self.velocityX,  self.maxspeed * self.direction, self.speed * dt)
             if abs(self.velocityX) < 2:
-                self.velocityX = self.move_towards(self.velocityX,  self.maxspeed * self.direction,  (self.speed * dt) * 6)
+                self.velocityX = self.move_towards(self.velocityX, self.maxspeed * self.direction, (self.speed * dt) * 6)
         else:
-            if self.isonfloor == True:
-                self.velocityX = self.move_towards(self.velocityX,  0,  (self.speed * 1.5) * dt)
+            if self.isonfloor is True:
+                self.velocityX = self.move_towards(self.velocityX, 0, (self.speed * 3) * dt)
             else:
-                self.velocityX = self.move_towards(self.velocityX,  0,  self.speed * dt)
-        
+                self.velocityX = self.move_towards(self.velocityX, 0, (self.speed * 2.5) * dt)
+
         # do gravity acceleration or jump
         if not self.velocityY >= self.maxfallspeed:
             self.velocityY += self.gravity * dt
         if (self.keys[pygame.K_w] or self.keys[pygame.K_SPACE]) and self.isonfloor:
             self.sound["jump"].play()
-            self.playerrect.y -= 1 
+            self.playerrect.y -= 1
             self.velocityY += self.jumphight
 
         self.isonfloor = False
-        
+
         # checks if level end reacheds
         if self.hitbox(4):
             self.died()
-        # checks if off solid tile if yes gravity added if not reset velocityY and check if solid tile it roof if no is on floor true
+
         if not (1 in self.hitbox(2) or 0 in self.hitbox(2)):
             self.playerrect.y += self.velocityY * dt
         else:
-            if not 0 in self.hitbox(2):
+            if 0 not in self.hitbox(2):
                 self.isonfloor = True
                 while 1 in self.hitbox(2):
                     self.playerrect.y += -1
@@ -215,7 +231,10 @@ class players:
         # if moving or jumping use walking animation if not use standing sprite
         if self.movevector.x != 0:
             if self.direction < 0:
-                screen.blit(pygame.transform.flip(self.playeranimations[{True: 1,  False: 0}[self.animation]], True, False, ), (self.playerrect.x + camera.x,  self.playerrect.y + camera.y))
+                screen.blit(
+                        pygame.transform.flip(self.playeranimations[{True: 1,  False: 0}[self.animation]], True, False),
+                        (self.playerrect.x + camera.x,  self.playerrect.y + camera.y)
+                    )
             else:
                 screen.blit(self.playeranimations[{True: 1,  False: 0}[self.animation]], (self.playerrect.x + camera.x,  self.playerrect.y + camera.y))
 
@@ -254,10 +273,10 @@ class nonplayers:
         try:
             # setup player rect
             self.playeranimations = [
-                pygame.transform.scale(texture["nonplayerstand"],  (cellsize,  cellsize)), 
-                pygame.transform.scale(texture["nonplayerwalk"],  (cellsize,  cellsize)), 
+                pygame.transform.scale(texture["nonplayerstand"],  (cellsize,  cellsize)),
+                pygame.transform.scale(texture["nonplayerwalk"],  (cellsize,  cellsize)),
             ]
-        except:
+        except Exception as e:
             pass
         self.playerrect = pygame.Rect((x * cellsize,  y * cellsize),  (10,  10))
 
@@ -298,7 +317,7 @@ class nonplayers:
         if self.tilemap.currentlevel[int(self.tempy.y)][int(self.tempy.x)] != 2:
             self.playerrect.y += self.velocityY * dt
         else:
-            if self.tilemap.currentlevel[int(self.tilemap.global_to_map(self.playerrect).y)][int(self.tempy.x)]!= 2:
+            if self.tilemap.currentlevel[int(self.tilemap.global_to_map(self.playerrect).y)][int(self.tempy.x)] != 2:
                 self.isonfloor = True
             self.velocityY = 0
 
@@ -306,7 +325,7 @@ class nonplayers:
             self.velocityX = self.move_towards(self.velocityX,  self.maxspeed * self.direction,  self.speed)
         else:
             self.velocityX = self.move_towards(self.velocityX,  0,  self.speed)
-            
+
         # checks if moving will put you in wall if not move
         if self.tilemap.currentlevel[int(self.tempx.y)][int(self.tempx.x)] != 2 and self.tilemap.currentlevel[int(self.tempy.y)][int(self.tempy.x)] == 2:
             self.playerrect.x += self.velocityX * dt
@@ -314,13 +333,16 @@ class nonplayers:
             self.direction = 0 - self.direction
             self.velocityX = self.move_towards(self.velocityX,  self.maxspeed * self.direction,  self.speed)
             self.playerrect.x += self.velocityX * dt
-            
+
         if self.playerrect.x + camera.x > camera.x and self.playerrect.x + camera.x < ((aspect[0] * size) * cellsize):
             self.draw()
 
     def draw(self):
         if self.direction < 0:
-            screen.blit(pygame.transform.flip( self.playeranimations[{True: 1,  False: 0}[self.animation]], True, False, ), (self.playerrect.x + camera.x,  self.playerrect.y + camera.y))
+            screen.blit(
+                    pygame.transform.flip(self.playeranimations[{True: 1,  False: 0}[self.animation]], True, False),
+                    (self.playerrect.x + camera.x,  self.playerrect.y + camera.y)
+                )
         else:
             screen.blit(self.playeranimations[{True: 1,  False: 0}[self.animation]],  (self.playerrect.x + camera.x,  self.playerrect.y + camera.y))
 
@@ -355,12 +377,12 @@ class tilemaps:
                             screen.blit(self.textures[self.currentlevel[i - 1][j]],  self.tilerect)
                         else:
                             screen.blit(self.textures[3],  self.tilerect)
-                        
+
                     screen.blit(self.textures[self.currentlevel[i][j]],  self.tilerect)
-                    
+
                     if self.currentlevel[i][j] == 5:
                         screen.blit(self.textures[self.currentlevel[i - 1][j]],  self.tilerect)
-                except:
+                except Exception as e:
                     pass
 
     def global_to_map(self,  vector):
@@ -369,7 +391,6 @@ class tilemaps:
         y = int((vector.y + halfcellsize) // cellsize)
         return pygame.math.Vector2(x,  y)
 
-# main
 
 # find used *.pak
 arg = str(sys.argv[1]).split(".")[0]
@@ -377,7 +398,19 @@ arg = str(sys.argv[1]).split(".")[0]
 level = ""
 nextlevel = "a1m1.map"
 
-nextlevel,  newmap,  camera,  tilemap,  player,  processes,  sound,  texture,  level,  nonplayer,  message = loadnewlevel(nextlevel,  nextlevel)
+(
+    nextlevel,
+    newmap,
+    camera,
+    tilemap,
+    player,
+    processes,
+    sound,
+    texture,
+    level,
+    nonplayer,
+    message
+) = loadnewlevel(nextlevel,  nextlevel)
 
 levelnum = 1
 
@@ -387,12 +420,15 @@ client_socket = socket.socket()
 client_socket.connect((host,  port))
 client_id = client_socket.recv(1024)
 clientdatalist = {}
-clientanimations = [pygame.transform.scale(texture["playerstand"],  (cellsize,  cellsize)),  pygame.transform.scale(texture["playerwalk"],  (cellsize,  cellsize))]
+clientanimations = [
+        pygame.transform.scale(texture["playerstand"], (cellsize,  cellsize)),
+        pygame.transform.scale(texture["playerwalk"], (cellsize,  cellsize))
+    ]
 clientanimation = True
 clientcurrentanimationdelay = 0
 clientanimationdelay = 60
 clientname = sys.argv[3]
-    
+
 while True:
     # center camera
     camera.x = 0 - player.playerrect.x + (aspect[0] * cellsize) - cellsize
@@ -405,7 +441,10 @@ while True:
         process()
 
     # x/y coords
-    screen.blit(pygametext("X: "+ str(player.playerrect.x) + " Y: "+ str(player.playerrect.y)), (1,  1,  1,  1))
+    screen.blit(
+            pygametext("X: " + str(player.playerrect.x) + " Y: " + str(player.playerrect.y)),
+            (1,  1,  1,  1)
+        )
     screen.blit(pygametext("Hp: " + str(player.hp)), ((aspect[0] * (cellsize * 2)) - 60,  1,  1,  1))
 
     for event in pygame.event.get():
@@ -416,21 +455,61 @@ while True:
 
     if player.hitbox(1):
         sound["goal"].play()
-        nextlevel,  newmap,  camera,  tilemap,  player,  processes,  sound,  texture,  level,  nonplayer,  message = loadnewlevel(nextlevel, 'null', 3, message)
+        (
+            nextlevel,
+            newmap,
+            camera,
+            tilemap,
+            player,
+            processes,
+            sound,
+            texture,
+            level,
+            nonplayer,
+            message
+        ) = loadnewlevel(nextlevel, 'null', 3, message)
         levelnum += 1
     if player.hp < 1:
         player.hp = 3
-        nextlevel,  newmap,  camera,  tilemap,  player,  processes,  sound,  texture,  level,  nonplayer,  message = loadnewlevel(nextlevel, "a1m1.map", 3, message)
+        (
+            nextlevel,
+            newmap,
+            camera,
+            tilemap,
+            player,
+            processes,
+            sound,
+            texture,
+            level,
+            nonplayer,
+            message
+        ) = loadnewlevel(nextlevel, 'a1m1.map', 3, message)
         levelnum = 1
-		
+
     clientanimationdelay = int(clock.get_fps())
     try:
-        message = client_id + player.playerrect.x.to_bytes(2,  'little') + player.playerrect.y.to_bytes(2,  'little') + int(player.direction + 1).to_bytes(1,  'little') + int(player.movevector.x == 0).to_bytes(1,  'little') + levelnum.to_bytes(1,  'little') + clientname.encode("utf-8")
-    except:
-        message = client_id + player.playerrect.x.to_bytes(2,  'little') + player.playerrect.y.to_bytes(2,  'little') + int(player.direction + 1).to_bytes(1,  'little') + int(0).to_bytes(1,  'little') + levelnum.to_bytes(1,  'little') + clientname.encode("utf-8")
-    
+        message = (
+                client_id +
+                player.playerrect.x.to_bytes(2,  'little') +
+                player.playerrect.y.to_bytes(2,  'little') +
+                int(player.direction + 1).to_bytes(1,  'little') +
+                int(player.movevector.x == 0).to_bytes(1,  'little') +
+                levelnum.to_bytes(1,  'little') +
+                clientname.encode("utf-8")
+            )
+    except Exception as e:
+        message = (
+                client_id +
+                player.playerrect.x.to_bytes(2,  'little') +
+                player.playerrect.y.to_bytes(2,  'little') +
+                int(player.direction + 1).to_bytes(1,  'little') +
+                int(0).to_bytes(1,  'little') +
+                levelnum.to_bytes(1,  'little') +
+                clientname.encode("utf-8")
+            )
+
     client_socket.send(message)
-	
+
     data = client_socket.recv(1024)
     if data:
         data = data.split(b'\xff')
@@ -438,32 +517,66 @@ while True:
             client_data = list(client)
             if client:
                 try:
-                    clientdatalist[client_data[0]] = {'x': client_data[1].to_bytes(1,  'little') + client_data[2].to_bytes(1,  'little'),  'y': client_data[3].to_bytes(1,  'little') + client_data[4].to_bytes(1,  'little'),  'd': client_data[5] - 1,  'm': client_data[6],  'l': client_data[7]}
+                    clientdatalist[client_data[0]] = {
+                            'x': client_data[1].to_bytes(1,  'little') + client_data[2].to_bytes(1,  'little'),
+                            'y': client_data[3].to_bytes(1,  'little') + client_data[4].to_bytes(1,  'little'),
+                            'd': client_data[5] - 1,
+                            'm': client_data[6],
+                            'l': client_data[7]
+                        }
                     clientdatalist[client_data[0]]['n'] = chr(client_data[8]) + chr(client_data[9]) + chr(client_data[10])
-                except:
+                except Exception as e:
                     print('Packet malformed: ignoring')
             if clientcurrentanimationdelay >= clientanimationdelay:
                 clientcurrentanimationdelay = 0
-                clientanimation = not clientanimation 
+                clientanimation = not clientanimation
             else:
-                clientcurrentanimationdelay += 1      
+                clientcurrentanimationdelay += 1
     for c in clientdatalist.keys():
         if c.to_bytes(1,  'little') != client_id and clientdatalist[c]['l'] == levelnum:
-            screen.blit(pygametext(clientdatalist[c]['n']),  (int.from_bytes(clientdatalist[c]['x'],  "little") + camera.x,  int.from_bytes(clientdatalist[c]['y'],  "little") - 20 + camera.y))
+            screen.blit(
+                    pygametext(clientdatalist[c]['n']),
+                    (
+                        int.from_bytes(clientdatalist[c]['x'],  "little") + camera.x,
+                        int.from_bytes(clientdatalist[c]['y'],  "little") - 20 + camera.y
+                    )
+                )
             if not clientdatalist[c]['m']:
                 if clientdatalist[c]['d'] < 0:
-                    screen.blit(pygame.transform.flip(clientanimations[clientanimation],  True,  False),  (int.from_bytes(clientdatalist[c]['x'],  "little") + camera.x,  int.from_bytes(clientdatalist[c]['y'],  "little") + camera.y))
+                    screen.blit(
+                            pygame.transform.flip(clientanimations[clientanimation],  True,  False),
+                            (int.from_bytes(clientdatalist[c]['x'],  "little") + camera.x,  int.from_bytes(clientdatalist[c]['y'],  "little") + camera.y)
+                        )
                 else:
-                    screen.blit(clientanimations[clientanimation],  (int.from_bytes(clientdatalist[c]['x'],  "little") + camera.x,  int.from_bytes(clientdatalist[c]['y'],  "little") + camera.y))
+                    screen.blit(
+                            clientanimations[clientanimation],
+                            (int.from_bytes(clientdatalist[c]['x'],  "little") + camera.x,  int.from_bytes(clientdatalist[c]['y'],  "little") + camera.y)
+                        )
             else:
                 if clientdatalist[c]['d'] < 0:
-                    screen.blit(pygame.transform.flip(clientanimations[0],  True,  False),  (int.from_bytes(clientdatalist[c]['x'],  "little") + camera.x,  int.from_bytes(clientdatalist[c]['y'],  "little") + camera.y))
+                    screen.blit(
+                            pygame.transform.flip(clientanimations[0],  True,  False),
+                            (
+                                int.from_bytes(clientdatalist[c]['x'], "little") +
+                                camera.x,
+                                int.from_bytes(clientdatalist[c]['y'], "little") +
+                                camera.y
+                            )
+                        )
                 else:
-                    screen.blit(clientanimations[0],  (int.from_bytes(clientdatalist[c]['x'],  "little") + camera.x,  int.from_bytes(clientdatalist[c]['y'],  "little") + camera.y))
-	
+                    screen.blit(
+                            clientanimations[0],
+                            (
+                                int.from_bytes(clientdatalist[c]['x'], "little") +
+                                camera.x,
+                                int.from_bytes(clientdatalist[c]['y'], "little") +
+                                camera.y
+                            )
+                        )
+
     # displays fps on title bar
     pygame.display.set_caption("FPS: " + str(int(clock.get_fps())))
 
     # update pygame and get deltatime
     pygame.display.update()
-    dt = clock.tick(60) / 100
+    dt = clock.tick(120) / 100
