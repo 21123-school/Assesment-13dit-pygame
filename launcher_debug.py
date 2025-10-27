@@ -67,10 +67,10 @@ def start_game_S():
     sav = file_dropdown_sav.get()
     nam = file_dropdown_nam.get()
     if not sav:
-        sav = "localhost"
+        sav = "single"
     if not nam:
         nam = "tes"
-    subprocess.Popen([sys.executable, "server.py"])
+    #subprocess.Popen([sys.executable, "server.py"])
     subprocess.Popen([sys.executable, "main.py", pak, sav, nam[:3]])
 
 

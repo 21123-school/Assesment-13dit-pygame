@@ -391,16 +391,17 @@ nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, no
 levelnum = 1
 
 host = sys.argv[2]
-port = 49152
-client_socket = socket.socket()
-client_socket.connect((host, port))
-client_id = client_socket.recv(1024)
-clientdatalist = {}
-clientanimations = [pygame.transform.scale(texture["playerstand"], (cellsize, cellsize)), pygame.transform.scale(texture["playerwalk"], (cellsize, cellsize))]
-clientanimation = True
-clientcurrentanimationdelay = 0
-clientanimationdelay = 60
-clientname = sys.argv[3]
+if host != 'single':
+    port = 49152
+    client_socket = socket.socket()
+    client_socket.connect((host, port))
+    client_id = client_socket.recv(1024)
+    clientdatalist = {}
+    clientanimations = [pygame.transform.scale(texture["playerstand"], (cellsize, cellsize)), pygame.transform.scale(texture["playerwalk"], (cellsize, cellsize))]
+    clientanimation = True
+    clientcurrentanimationdelay = 0
+    clientanimationdelay = 60
+    clientname = sys.argv[3]
 
 while True:
     # center camera
@@ -434,43 +435,44 @@ while True:
         nextlevel, newmap, camera, tilemap, player, processes, sound, texture, level, nonplayer, message = loadnewlevel(nextlevel, "a1m1.map", 3, message)
         levelnum = 1
 
-    clientanimationdelay = int(clock.get_fps())
-    try:
-        message = client_id + player.playerrect.x.to_bytes(2, 'little') + player.playerrect.y.to_bytes(2, 'little') + int(player.direction + 1).to_bytes(1, 'little') + int(player.movevector.x == 0).to_bytes(1, 'little') + levelnum.to_bytes(1, 'little') + clientname.encode("utf-8")
-    except:
-        message = client_id + player.playerrect.x.to_bytes(2, 'little') + player.playerrect.y.to_bytes(2, 'little') + int(player.direction + 1).to_bytes(1, 'little') + int(0).to_bytes(1, 'little') + levelnum.to_bytes(1, 'little') + clientname.encode("utf-8")
+    if host != 'single':
+        clientanimationdelay = int(clock.get_fps())
+        try:
+            message = client_id + player.playerrect.x.to_bytes(2, 'little') + player.playerrect.y.to_bytes(2, 'little') + int(player.direction + 1).to_bytes(1, 'little') + int(player.movevector.x == 0).to_bytes(1, 'little') + levelnum.to_bytes(1, 'little') + clientname.encode("utf-8")
+        except:
+            message = client_id + player.playerrect.x.to_bytes(2, 'little') + player.playerrect.y.to_bytes(2, 'little') + int(player.direction + 1).to_bytes(1, 'little') + int(0).to_bytes(1, 'little') + levelnum.to_bytes(1, 'little') + clientname.encode("utf-8")
 
-    client_socket.send(message)
+        client_socket.send(message)
 
-    data = client_socket.recv(1024)
-    if data:
-        data = data.split(b'\xff')
-        for client in data:
-            client_data = list(client)
-            if client:
-                try:
-                    clientdatalist[client_data[0]] = {'x': client_data[1].to_bytes(1, 'little') + client_data[2].to_bytes(1, 'little'), 'y': client_data[3].to_bytes(1, 'little') + client_data[4].to_bytes(1, 'little'), 'd': client_data[5] - 1, 'm': client_data[6], 'l': client_data[7]}
-                    clientdatalist[client_data[0]]['n'] = chr(client_data[8]) + chr(client_data[9]) + chr(client_data[10])
-                except:
-                    print('Packet malformed: ignoring')
-            if clientcurrentanimationdelay >= clientanimationdelay:
-                clientcurrentanimationdelay = 0
-                clientanimation = not clientanimation
-            else:
-                clientcurrentanimationdelay += 1
-    for c in clientdatalist.keys():
-        if c.to_bytes(1, 'little') != client_id and clientdatalist[c]['l'] == levelnum:
-            screen.blit(pygametext(clientdatalist[c]['n']), (int.from_bytes(clientdatalist[c]['x'], "little") + camera.x, int.from_bytes(clientdatalist[c]['y'], "little") - 20 + camera.y))
-            if not clientdatalist[c]['m']:
-                if clientdatalist[c]['d'] < 0:
-                    screen.blit(pygame.transform.flip(clientanimations[clientanimation], True, False), (int.from_bytes(clientdatalist[c]['x'], "little") + camera.x, int.from_bytes(clientdatalist[c]['y'], "little") + camera.y))
+        data = client_socket.recv(1024)
+        if data:
+            data = data.split(b'\xff')
+            for client in data:
+                client_data = list(client)
+                if client:
+                    try:
+                        clientdatalist[client_data[0]] = {'x': client_data[1].to_bytes(1, 'little') + client_data[2].to_bytes(1, 'little'), 'y': client_data[3].to_bytes(1, 'little') + client_data[4].to_bytes(1, 'little'), 'd': client_data[5] - 1, 'm': client_data[6], 'l': client_data[7]}
+                        clientdatalist[client_data[0]]['n'] = chr(client_data[8]) + chr(client_data[9]) + chr(client_data[10])
+                    except:
+                        print('Packet malformed: ignoring')
+                if clientcurrentanimationdelay >= clientanimationdelay:
+                    clientcurrentanimationdelay = 0
+                    clientanimation = not clientanimation
                 else:
-                    screen.blit(clientanimations[clientanimation], (int.from_bytes(clientdatalist[c]['x'], "little") + camera.x, int.from_bytes(clientdatalist[c]['y'], "little") + camera.y))
-            else:
-                if clientdatalist[c]['d'] < 0:
-                    screen.blit(pygame.transform.flip(clientanimations[0], True, False), (int.from_bytes(clientdatalist[c]['x'], "little") + camera.x, int.from_bytes(clientdatalist[c]['y'], "little") + camera.y))
+                    clientcurrentanimationdelay += 1
+        for c in clientdatalist.keys():
+            if c.to_bytes(1, 'little') != client_id and clientdatalist[c]['l'] == levelnum:
+                screen.blit(pygametext(clientdatalist[c]['n']), (int.from_bytes(clientdatalist[c]['x'], "little") + camera.x, int.from_bytes(clientdatalist[c]['y'], "little") - 20 + camera.y))
+                if not clientdatalist[c]['m']:
+                    if clientdatalist[c]['d'] < 0:
+                        screen.blit(pygame.transform.flip(clientanimations[clientanimation], True, False), (int.from_bytes(clientdatalist[c]['x'], "little") + camera.x, int.from_bytes(clientdatalist[c]['y'], "little") + camera.y))
+                    else:
+                        screen.blit(clientanimations[clientanimation], (int.from_bytes(clientdatalist[c]['x'], "little") + camera.x, int.from_bytes(clientdatalist[c]['y'], "little") + camera.y))
                 else:
-                    screen.blit(clientanimations[0], (int.from_bytes(clientdatalist[c]['x'], "little") + camera.x, int.from_bytes(clientdatalist[c]['y'], "little") + camera.y))
+                    if clientdatalist[c]['d'] < 0:
+                        screen.blit(pygame.transform.flip(clientanimations[0], True, False), (int.from_bytes(clientdatalist[c]['x'], "little") + camera.x, int.from_bytes(clientdatalist[c]['y'], "little") + camera.y))
+                    else:
+                        screen.blit(clientanimations[0], (int.from_bytes(clientdatalist[c]['x'], "little") + camera.x, int.from_bytes(clientdatalist[c]['y'], "little") + camera.y))
 
     # displays fps on title bar
     pygame.display.set_caption("FPS: " + str(int(clock.get_fps())))
